@@ -1,0 +1,37 @@
+version: '3.9'
+services:
+
+  server:
+    build:
+      context: server
+    stop_signal: SIGKILL
+    networks:
+      - fake_twitter
+    ports:
+      - '80:80'
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    restart: always
+    stop_signal: SIGKILL
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=fake_twitter.db
+    networks:
+      - fake_twitter
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./db_data/:/var/lib/postgresql/data
+    command: >
+      postgres -c listen_addresses='*' 
+               -c log_destination=stderr 
+               -c logging_collector=on 
+               -c log_directory=/var/lib/postgresql/data/log
+
+networks:
+  fake_twitter:
+    driver: bridge
