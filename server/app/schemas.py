@@ -1,5 +1,11 @@
-from typing import Optional, Literal, List
-from pydantic import BaseModel
+from typing import (
+    Optional,
+    Literal,
+    List,
+)
+from pydantic import (
+    BaseModel,
+)
 
 
 class SuccessResponse(BaseModel):
@@ -52,6 +58,5 @@ class UserProfileDetailsOut(SuccessResponse):
     user: UserDetails
 
 
-class MediaOut(SuccessResponse):
+class AddMediaOut(SuccessResponse):
     media_id: int
-

@@ -9,6 +9,8 @@ services:
       - fake_twitter
     ports:
       - '80:80'
+    volumes:
+      - ./server/static/images:/usr/share/nginx/html/images
     depends_on:
       - db
 
@@ -19,7 +21,7 @@ services:
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=fake_twitter.db
+      - POSTGRES_DB=fake_twitter
     networks:
       - fake_twitter
     ports:
