@@ -282,7 +282,7 @@ class MediaFile(Base):
 
     @classmethod
     async def get_media_files_names(cls, ids_list: list) \
-            -> Sequence[Optional[str]]:
+            -> list[Optional[str]]:
         db_logger.info(f'Get media file names for {ids_list=}')
         async with async_session() as session:
             select_query = await session.execute(
@@ -291,16 +291,14 @@ class MediaFile(Base):
             )
             file_names = select_query.scalars().all()
             db_logger.info(f'{file_names=}')
-            return file_names
+            return list(file_names)
 
     @classmethod
-    async def delete_bulk_media_file(cls, user_name: str, files_ids: list) \
-            -> None:
-        # change None
-
+    async def bulk_delete(cls, user_name: str, files_ids: list) \
+            -> list[Optional[str]]:
         db_logger.info(
             f"Deleting media file {files_ids=} belong to {user_name=} "
-            "from table '{cls.__tablename__}'"
+            f"from table '{cls.__tablename__}'"
         )
         async with async_session() as session:
             async with session.begin():
@@ -311,7 +309,8 @@ class MediaFile(Base):
                     .returning(cls.file_name)
                 )
                 deleted_file_names = delete_query.scalars().all()
-            db_logger.info(f'Deleted  {deleted_file_names=}')
+            db_logger.info(f'Deleted  {deleted_file_names=} {list(deleted_file_names)=}')
+        return list(deleted_file_names)
 
 
 class Tweet(Base):
@@ -395,8 +394,9 @@ class Tweet(Base):
                 return deleted_details
 
     @classmethod
-    async def get_tweets_by_author(cls, followed_users_name: list) \
-            -> Sequence[Tweet]:
+    async def get_tweets_by_author_sorted_by_likes(
+            cls,
+            followed_users_name: list) -> Sequence[Tweet]:
         db_logger.info(
             f"Get tweets for {followed_users_name=} and sort them descending "
             f"by likes from table '{cls.__tablename__}'"
@@ -405,8 +405,8 @@ class Tweet(Base):
             select_query = await session.execute(
                 select(cls)
                 .where(cls.author_name.in_(followed_users_name))
-                # .join(TweetLike, cls.id == TweetLike.tweet_id)
-                # .order_by(desc(func.count(TweetLike.id)))
+                .outerjoin(TweetLike, cls.id == TweetLike.tweet_id)
+                .order_by(desc(func.count(TweetLike.id)))
                 .group_by(cls.id)
                 .options(
                     joinedload(cls.author),
@@ -415,17 +415,40 @@ class Tweet(Base):
                              )
                 )
             )
-            tweets = select_query.unique().scalars().all()
-            db_logger.info(f"{tweets=}")
-        return tweets
+            user_tweets = select_query.unique().scalars().all()
+            db_logger.info(f"{user_tweets=}")
+        return user_tweets
+
+    @classmethod
+    async def get_all_tweets_sorted_by_likes(cls) -> Sequence[Tweet]:
+        db_logger.info(
+            f"Get all tweets sorted descending by likes"
+            f" from table '{cls.__tablename__}'"
+        )
+        async with async_session() as session:
+            select_query = await session.execute(
+                select(cls)
+                .outerjoin(TweetLike, cls.id == TweetLike.tweet_id)
+                .order_by(desc(func.count(TweetLike.id)))
+                .group_by(cls.id)
+                .options(
+                    joinedload(cls.author),
+                    joinedload(cls.likes)
+                    .options(joinedload(TweetLike.user_details)
+                             )
+                )
+            )
+            all_tweets = select_query.unique().scalars().all()
+            db_logger.info(f"{all_tweets=}")
+        return all_tweets
 
 
 async def create_tables() -> None:
     """Create tables in db"""
 
     async with async_engine.begin() as conn:
-        db_logger.info("Dropping all table in db")
-        await conn.run_sync(Base.metadata.drop_all)
+        # db_logger.info("Dropping all table in db")
+        # await conn.run_sync(Base.metadata.drop_all)
 
         db_logger.info("Creating tables which are not existed in db.")
         await conn.run_sync(Base.metadata.create_all)
@@ -455,27 +478,44 @@ async def init_db() -> None:
             amigo.followed.append(petr)
             nikole.followed.append(amigo)
             nikole.followed.append(petr)
-            media_file_1 = MediaFile(file_name='./1.jpg', user_name='Alex')
-            media_file_2 = MediaFile(file_name='./2.jpg', user_name='Alex')
-            media_file_3 = MediaFile(file_name='./3.jpg', user_name='Petr')
+            media_file_1 = MediaFile(
+                file_name='champions_1.png', user_name='Alex'
+            )
+            media_file_2 = MediaFile(
+                file_name='champions_2.png', user_name='Alex'
+            )
+            media_file_3 = MediaFile(
+                file_name='good_morning.jpg', user_name='Alex'
+            )
+            media_file_4 = MediaFile(
+                file_name='sun_rise.jpg', user_name='Petr'
+            )
+            media_file_5 = MediaFile(
+                file_name='vacation.jpg', user_name='Nikole'
+            )
             tweet_1 = Tweet(
                 author_name='Alex',
-                tweet_data='Have a good day!',
+                tweet_data='!!!Hala Madrid!!!',
                 tweet_media_ids=[1, 2]
             )
             tweet_2 = Tweet(
                 author_name='Alex',
-                tweet_data='Sunny day!',
-                tweet_media_ids=[1, 2]
+                tweet_data='Good morning=))',
+                tweet_media_ids=[3]
             )
             tweet_3 = Tweet(
                 author_name='Petr',
                 tweet_data='Today is a nice day!',
-                tweet_media_ids=[3]
+                tweet_media_ids=[4]
             )
             tweet_4 = Tweet(
-                author_name='Amigo',
-                tweet_data='Perfect day!'
+                author_name='Nikole',
+                tweet_data='Awaited vacation after hard working year...',
+                tweet_media_ids=[5]
+            )
+            tweet_5 = Tweet(
+                author_name='Nikole',
+                tweet_data='Again raining)',
             )
             like_1_1 = TweetLike(tweet_id=1, user_name='Nikole')
             like_2_1 = TweetLike(tweet_id=2, user_name='Nikole')
@@ -500,10 +540,13 @@ async def init_db() -> None:
                     media_file_1,
                     media_file_2,
                     media_file_3,
+                    media_file_4,
+                    media_file_5,
                     tweet_1,
                     tweet_2,
                     tweet_3,
-                    tweet_4
+                    tweet_4,
+                    tweet_5
                 ]
             )
             await session.commit()
