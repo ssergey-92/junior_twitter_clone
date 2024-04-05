@@ -1,27 +1,13 @@
 from __future__ import annotations
-from typing import List, Optional, Any, Sequence
+from typing import List, Optional
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.dialects.postgresql import Insert as postgre_insert
-from sqlalchemy.orm import (
-    declarative_base,
-    mapped_column,
-    Mapped,
-    relationship,
-    backref,
-    joinedload,
-)
-from sqlalchemy import (
-    ARRAY,
-    Column,
-    Delete,
-    ForeignKey,
-    Insert,
-    Integer,
-    select,
-    String,
-    Table, Row, RowMapping, UniqueConstraint, Select, desc, func
-)
+from sqlalchemy.orm import (backref, declarative_base, joinedload,
+                            mapped_column, Mapped, relationship)
+from sqlalchemy import (ARRAY, Column, delete, desc, ForeignKey, func, Insert,
+                        Integer, select, Table,  UniqueConstraint)
+
 
 from my_logger import get_stream_logger
 
@@ -70,11 +56,12 @@ class User(Base):
     @classmethod
     async def is_existed_user_name(cls, user_name: str) -> bool:
         db_logger.info(
-            f"Checking if {user_name=} is existed in table '{cls.__tablename__}'"
+            f"Checking if {user_name=} is existed in table "
+            f"'{cls.__tablename__}'"
         )
         async with async_session() as session:
             user_query = await session.execute(
-                select(User.id).filter(User.name == user_name)
+                select(User.id).where(User.name == user_name)
             )
             user_id = user_query.scalar_one_or_none()
             db_logger.info(f"Details of {user_name=}: {user_id=}")
@@ -87,7 +74,7 @@ class User(Base):
         )
         async with async_session() as session:
             user_query = await session.execute(
-                select(User.name).filter(User.id == user_id)
+                select(User.name).where(User.id == user_id)
             )
             user_name = user_query.scalar_one_or_none()
             db_logger.info(f"Details of {user_id=}: {user_name=}")
@@ -100,7 +87,7 @@ class User(Base):
         )
         async with async_session() as session:
             user_query = await session.execute(
-                select(User.id).filter(User.name == user_name)
+                select(User.id).where(User.name == user_name)
             )
             user_id = user_query.scalar()
             db_logger.info(f"{user_name=}: {user_id=}")
@@ -121,7 +108,7 @@ class User(Base):
         async with async_session() as session:
             user_query = await session.execute(
                 select(User)
-                .filter(User.name == user_name)
+                .where(User.name == user_name)
                 .options(
                     joinedload(User.followed),
                     joinedload(User.followers),
@@ -134,12 +121,13 @@ class User(Base):
     @classmethod
     async def get_user_by_id(cls, user_id: int) -> Optional[User]:
         db_logger.info(
-            f"Get full details of {user_id=} from table '{cls.__tablename__}'"
+            f"Get full details of {user_id=} from table "
+            f"'{cls.__tablename__}'"
         )
         async with async_session() as session:
             user_query = await session.execute(
                 select(User)
-                .filter(User.id == user_id)
+                .where(User.id == user_id)
                 .options(
                     joinedload(User.followed),
                     joinedload(User.followers),
@@ -183,7 +171,7 @@ class User(Base):
         async with async_session() as session:
             async with session.begin():
                 delete_query = await session.execute(
-                    Delete(followers)
+                    delete(followers)
                     .where(followers.c.follower_id == follower_id,
                            followers.c.followed_id == followed_id)
                     .returning(followers.c.follower_id,
@@ -245,7 +233,7 @@ class TweetLike(Base):
         async with async_session() as session:
             async with session.begin():
                 delete_query = await session.execute(
-                    Delete(cls)
+                    delete(cls)
                     .where(cls.user_name == user_name,
                            cls.tweet_id == tweet_id)
                     .returning(cls.id)
@@ -303,13 +291,13 @@ class MediaFile(Base):
         async with async_session() as session:
             async with session.begin():
                 delete_query = await session.execute(
-                    Delete(cls)
+                    delete(cls)
                     .where(cls.user_name == user_name,
                            cls.id.in_(files_ids))
                     .returning(cls.file_name)
                 )
                 deleted_file_names = delete_query.scalars().all()
-            db_logger.info(f'Deleted  {deleted_file_names=} {list(deleted_file_names)=}')
+            db_logger.info(f'{deleted_file_names=}')
         return list(deleted_file_names)
 
 
@@ -341,7 +329,7 @@ class Tweet(Base):
         )
         async with async_session() as session:
             exist_query = await session.execute(
-                Select(cls.tweet_data)
+                select(cls.tweet_data)
                 .where(cls.id == tweet_id)
             )
             tweet_data = exist_query.scalar_one_or_none()
@@ -373,8 +361,8 @@ class Tweet(Base):
             return tweet_id
 
     @classmethod
-    async def delete_tweet(cls, author_name: str, tweet_id) \
-            -> Sequence[Row[Any] | RowMapping | Any]:
+    async def delete_tweet(cls, author_name: str, tweet_id: int) \
+            -> Optional[tuple[str, Optional[list[int]]]]:
         db_logger.info(
             f"Deleting {tweet_id=} by {author_name=} from table "
             f"'{cls.__tablename__}'"
@@ -382,7 +370,7 @@ class Tweet(Base):
         async with async_session() as session:
             async with session.begin():
                 delete_query = await session.execute(
-                    Delete(cls)
+                    delete(cls)
                     .where(cls.id == tweet_id,
                            cls.author_name == author_name)
                     .returning(cls.tweet_data,
@@ -390,21 +378,19 @@ class Tweet(Base):
                 )
                 deleted_details = delete_query.one_or_none()
                 db_logger.info(f"Deleted tweet {deleted_details=}")
-
                 return deleted_details
 
     @classmethod
-    async def get_tweets_by_author_sorted_by_likes(
-            cls,
-            followed_users_name: list) -> Sequence[Tweet]:
+    async def get_tweets_by_author_sorted_by_likes(cls, followed_names: list) \
+            -> list[Optional[Tweet]]:
         db_logger.info(
-            f"Get tweets for {followed_users_name=} and sort them descending "
+            f"Get tweets for {followed_names=} and sort them descending "
             f"by likes from table '{cls.__tablename__}'"
         )
         async with async_session() as session:
             select_query = await session.execute(
                 select(cls)
-                .where(cls.author_name.in_(followed_users_name))
+                .where(cls.author_name.in_(followed_names))
                 .outerjoin(TweetLike, cls.id == TweetLike.tweet_id)
                 .order_by(desc(func.count(TweetLike.id)))
                 .group_by(cls.id)
@@ -417,10 +403,10 @@ class Tweet(Base):
             )
             user_tweets = select_query.unique().scalars().all()
             db_logger.info(f"{user_tweets=}")
-        return user_tweets
+        return list(user_tweets)
 
     @classmethod
-    async def get_all_tweets_sorted_by_likes(cls) -> Sequence[Tweet]:
+    async def get_all_tweets_sorted_by_likes(cls) -> list[Optional[Tweet]]:
         db_logger.info(
             f"Get all tweets sorted descending by likes"
             f" from table '{cls.__tablename__}'"
@@ -440,15 +426,15 @@ class Tweet(Base):
             )
             all_tweets = select_query.unique().scalars().all()
             db_logger.info(f"{all_tweets=}")
-        return all_tweets
+        return list(all_tweets)
 
 
 async def create_tables() -> None:
     """Create tables in db"""
 
     async with async_engine.begin() as conn:
-        # db_logger.info("Dropping all table in db")
-        # await conn.run_sync(Base.metadata.drop_all)
+        db_logger.info("Dropping all table in db")
+        await conn.run_sync(Base.metadata.drop_all)
 
         db_logger.info("Creating tables which are not existed in db.")
         await conn.run_sync(Base.metadata.create_all)
@@ -465,6 +451,7 @@ async def init_db() -> None:
     db_logger.info("initializing db")
     await create_tables()
     if not await User.is_existed_user_name("test"):
+        db_logger.info("Adding default data in db")
         async with async_session() as session:
             test = User(name='test')
             alex = User(name='Alex')

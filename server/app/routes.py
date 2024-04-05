@@ -1,14 +1,14 @@
 from contextlib import asynccontextmanager
 from typing import Annotated, Any, Union
 
-from fastapi import FastAPI, Form, Header, UploadFile, Response
+from fastapi import FastAPI, Form, Header, UploadFile, Response, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import PlainTextResponse, JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.requests import Request as StarletteRequest
 
-from database import init_db, close_db_connection
+from database import init_db, close_db_connection, User
 from models import HandleEndpoint
 from my_logger import get_stream_logger
 from schemas import (
@@ -21,6 +21,11 @@ from schemas import (
     ErrorResponse,
 )
 
+UNAUTHORIZED_MESSAGE = {
+    "result": False,
+    "error_type": "Unauthorized",
+    "error_message": "You don't have permission to visit website!"
+}
 routes_logger = get_stream_logger("routes_logger")
 
 
@@ -46,6 +51,22 @@ app = FastAPI(title="fake_twitter", lifespan=lifespan)
 # def get_fast_api_app() -> FastAPI:
 #     app = FastAPI()
 #     return app
+
+
+@app.middleware("http")
+async def intercept_request(request: Request, call_next):
+    api_key = request.headers.get('api-key')
+    routes_logger.info(f"Checking permission for user: {api_key=}")
+    if api_key and await User.is_existed_user_name(api_key):
+        routes_logger.info(f"Access granted!")
+        response = await call_next(request)
+        return response
+    else:
+        routes_logger.info(f"Access denied!")
+        return JSONResponse(
+            content=UNAUTHORIZED_MESSAGE,
+            status_code=401
+        )
 
 
 @app.exception_handler(StarletteHTTPException)

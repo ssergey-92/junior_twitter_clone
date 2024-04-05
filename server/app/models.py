@@ -1,7 +1,8 @@
 from datetime import datetime
 from os import path as os_path
+from random import randint
 from re import findall
-from typing import Optional, Sequence
+from typing import Optional, Union
 
 from aiofiles import open as aio_open, os as aio_os
 from fastapi import UploadFile
@@ -11,7 +12,18 @@ from schemas import AddTweetIn
 
 IMAGES_PATH = "/usr/share/nginx/html/images"
 ALLOWED_IMAGE_EXTENSIONS = ("png", "jpg", "jpeg")
-error_message = {"result": False, "error_type": "", "error_message": ""}
+error_template_message = {
+    "result": False,
+    "error_type": "",
+    "error_message": ""
+}
+
+FORBIDDEN_MESSAGE = {
+    "result": False,
+    "error_type": "Forbidden",
+    "error_message": "You don't have permission for such operation!"
+    }
+FORBIDDEN_RESPONSE = (FORBIDDEN_MESSAGE, 403,)
 
 
 class HandleEndpoint:
@@ -36,26 +48,30 @@ class HandleEndpoint:
         return user_profile
 
     @staticmethod
-    def _check_media_file(file_name: str) -> Optional[tuple[dict, int]]:
+    def _check_media_file(file_name: str) \
+            -> Union[tuple[dict, int], str, None]:
         split_file_name = file_name.rsplit('.')
-        if (len(split_file_name) != 2 or
-                not findall(r"^[\w_]+$", split_file_name[0])):
-            error_message["error_message"] = (
-                f"Incorrect filename {file_name}!(ex. image.jpg)"
-                f"File name should contain only letters, numbers and _"
-                )
-        elif split_file_name[1] not in ALLOWED_IMAGE_EXTENSIONS:
-            error_message["error_message"] = (
+        if split_file_name[-1:] not in ALLOWED_IMAGE_EXTENSIONS:
+            error_template_message["error_type"] = "Bad Request"
+            error_template_message["error_message"] = (
                     f"Support only filename formats: "
                     f"{ALLOWED_IMAGE_EXTENSIONS}!"
                 )
+            return error_template_message, 400
+        elif (len(split_file_name) != 2 or
+                not findall(r"^[\w_]+$", split_file_name[0])):
+            safe_filename = "{name}.{format}".format(
+                name=randint(1, 1000),
+                format=split_file_name[-1:]
+            )
+            return safe_filename
         else:
             return None
-        error_message["error_type"] = "Bad Request"
-        return error_message, 400
+
+
 
     @staticmethod
-    async def _create_tweet_feed(tweets: Sequence[Tweet]) -> list:
+    async def _create_tweet_feed(tweets: list[Tweet]) -> list:
         tweet_feed = list()
         for i_tweet in tweets:
             if not i_tweet.tweet_media_ids:
@@ -84,11 +100,11 @@ class HandleEndpoint:
     @staticmethod
     async def _permission_check(api_key: str) -> Optional[tuple[dict, int]]:
         if not await User.is_existed_user_name(api_key):
-            error_message["error_type"] = "Unauthorized"
-            error_message["error_message"] = (
+            error_template_message["error_type"] = "Unauthorized"
+            error_template_message["error_message"] = (
                 "You don't have permission for operation!"
             )
-            return error_message, 400
+            return error_template_message, 400
         else:
             return None
 
@@ -100,11 +116,11 @@ class HandleEndpoint:
             if await User.is_existed_user_id(followed_id):
                 return None
             else:
-                error_message["error_type"] = "Bad Request"
-                error_message["error_message"] = (
+                error_template_message["error_type"] = "Bad Request"
+                error_template_message["error_message"] = (
                     f"Followed user with id: {followed_id} is not existed"
                 )
-            return error_message, 400
+            return error_template_message, 400
         else:
             return permission_restrictions
 
@@ -118,11 +134,11 @@ class HandleEndpoint:
             if tweet_existed:
                 return None
             else:
-                error_message["error_type"] = "Bad Request"
-                error_message["error_message"] = (
+                error_template_message["error_type"] = "Bad Request"
+                error_template_message["error_message"] = (
                     f"Tweet with id: {tweet_id} is not existed"
                 )
-            return error_message, 400
+            return error_template_message, 400
         else:
             return permission_restrictions
 
@@ -205,9 +221,9 @@ class HandleEndpoint:
                     )
                 return None, 200
             else:
-                error_message["error_type"] = "Unauthorized"
-            error_message["error_message"] = "You can delete only yours tweet!"
-            return error_message, 401
+                error_template_message["error_type"] = "Unauthorized"
+            error_template_message["error_message"] = "You can delete only yours tweet!"
+            return error_template_message, 401
         else:
             return permission_restrictions
 
@@ -222,9 +238,9 @@ class HandleEndpoint:
             if tweet_like_id:
                 return None, 201
             else:
-                error_message["error_type"] = "Bad Request"
-                error_message["error_message"] = "You did not like the tweet!"
-                return error_message, 400
+                error_template_message["error_type"] = "Bad Request"
+                error_template_message["error_message"] = "You did not like the tweet!"
+                return error_template_message, 400
         else:
             return permission_restrictions
 
@@ -239,11 +255,11 @@ class HandleEndpoint:
             if tweet_like_id:
                 return None, 201
             else:
-                error_message["error_type"] = "Bad Request"
-                error_message["error_message"] = (
+                error_template_message["error_type"] = "Bad Request"
+                error_template_message["error_message"] = (
                     "You have already liked the tweet!"
                 )
-                return error_message, 400
+                return error_template_message, 400
         else:
             return restrictions_details
 
@@ -265,11 +281,11 @@ class HandleEndpoint:
             return response_message, 200
 
         else:
-            error_message["error_type"] = "Unauthorized"
-            error_message["error_message"] = (
+            error_template_message["error_type"] = "Unauthorized"
+            error_template_message["error_message"] = (
                 "You don't have permission for operation!"
             )
-            return error_message, 400
+            return error_template_message, 400
 
     @staticmethod
     async def get_full_tweet_feed(api_key: str) -> tuple[dict, int]:
@@ -300,11 +316,11 @@ class HandleEndpoint:
                 response_message = {"result": True, "user": user_profile}
                 return response_message, 200
             else:
-                error_message["error_type"] = "Bad Request"
-                error_message["error_message"] = (
+                error_template_message["error_type"] = "Bad Request"
+                error_template_message["error_message"] = (
                     f"There is no user with id: {user_id} in db."
                 )
-                return error_message, 400
+                return error_template_message, 400
         else:
             return permission_restrictions
 
@@ -332,11 +348,11 @@ class HandleEndpoint:
             if follow_details:
                 return None, 201
             else:
-                error_message["error_type"] = "Bad Request"
-                error_message["error_message"] = (
+                error_template_message["error_type"] = "Bad Request"
+                error_template_message["error_message"] = (
                     f"You have already followed this user!"
                 )
-            return error_message, 400
+            return error_template_message, 400
         else:
             return permission_restrictions
 
@@ -352,10 +368,10 @@ class HandleEndpoint:
             if unfollow_details:
                 return None, 201
             else:
-                error_message["error_type"] = "Bad Request"
-                error_message["error_message"] = (
+                error_template_message["error_type"] = "Bad Request"
+                error_template_message["error_message"] = (
                     f"You are not following this user!"
                 )
-            return error_message, 400
+            return error_template_message, 400
         else:
             return permission_restrictions
