@@ -1,10 +1,4 @@
-from logging import (
-    getLogger,
-    StreamHandler,
-    DEBUG,
-    Formatter,
-    Logger,
-)
+from logging import DEBUG, Formatter, getLogger, Logger, StreamHandler
 
 
 def get_stream_logger(
@@ -14,7 +8,7 @@ def get_stream_logger(
     stream_handler = StreamHandler()
     stream_handler.setLevel(DEBUG)
     formatter = Formatter(
-        "*** %(asctime)s %(name)s %(funcName)s %(levelname)s %(message)s ***"
+        "*** %(asctime)s %(name)s %(funcName)s %(levelname)s %(message)s"
     )
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)

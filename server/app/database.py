@@ -2,14 +2,14 @@ from __future__ import annotations
 from typing import List, Optional
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlalchemy.dialects.postgresql import Insert as postgre_insert
+from sqlalchemy.dialects.postgresql import Insert as PostgresqlInsert
 from sqlalchemy.orm import (backref, declarative_base, joinedload,
                             mapped_column, Mapped, relationship)
 from sqlalchemy import (ARRAY, Column, delete, desc, ForeignKey, func, Insert,
                         Integer, select, Table,  UniqueConstraint)
 
 
-from my_logger import get_stream_logger
+from project_logger import get_stream_logger
 
 db_logger = get_stream_logger("db_logger")
 # DATABASE_URL = "postgresql+asyncpg://admin:admin@127.0.0.1:5432/fake_twitter"
@@ -17,8 +17,6 @@ DATABASE_URL = "postgresql+asyncpg://admin:admin@db:5432/fake_twitter"
 async_engine = create_async_engine(DATABASE_URL)
 async_session = async_sessionmaker(bind=async_engine)
 Base = declarative_base()
-
-# asyncpg.exceptions.UniqueViolationError
 
 followers = Table(
     "followers",
@@ -68,19 +66,6 @@ class User(Base):
             return True if user_id else False
 
     @classmethod
-    async def is_existed_user_id(cls, user_id: int) -> bool:
-        db_logger.info(
-            f"Checking if {user_id=} is existed in table '{cls.__tablename__}'"
-        )
-        async with async_session() as session:
-            user_query = await session.execute(
-                select(User.name).where(User.id == user_id)
-            )
-            user_name = user_query.scalar_one_or_none()
-            db_logger.info(f"Details of {user_id=}: {user_name=}")
-            return True if user_name else False
-
-    @classmethod
     async def get_user_id_by_name(cls, user_name: str) -> int:
         db_logger.info(
             f"Get user id by {user_name=} from table '{cls.__tablename__}'"
@@ -104,7 +89,8 @@ class User(Base):
     @classmethod
     async def get_user_by_name(cls, user_name: str) -> Optional[User]:
         db_logger.info(
-            f"Get full details of {user_name=} from table '{cls.__tablename__}'")
+            f"Get full details of {user_name=} from table "
+            f"'{cls.__tablename__}'")
         async with async_session() as session:
             user_query = await session.execute(
                 select(User)
@@ -147,7 +133,7 @@ class User(Base):
         async with async_session() as session:
             async with session.begin():
                 insert_query = (
-                    postgre_insert(followers).
+                    PostgresqlInsert(followers).
                     values(follower_id=follower_id, followed_id=followed_id)
                 )
                 do_nothing_on_conflict = (
@@ -213,7 +199,7 @@ class TweetLike(Base):
         async with async_session() as session:
             async with session.begin():
                 insert_query = (
-                    postgre_insert(cls)
+                    PostgresqlInsert(cls)
                     .values(tweet_id=tweet_id,
                             user_name=user_name)
                 )
@@ -321,20 +307,6 @@ class Tweet(Base):
         primaryjoin="Tweet.id == TweetLike.tweet_id",
         lazy="joined",
     )
-
-    @classmethod
-    async def is_existed(cls, tweet_id: int) -> bool:
-        db_logger.info(
-            f"Check if {tweet_id=} is existed in table '{cls.__tablename__}'"
-        )
-        async with async_session() as session:
-            exist_query = await session.execute(
-                select(cls.tweet_data)
-                .where(cls.id == tweet_id)
-            )
-            tweet_data = exist_query.scalar_one_or_none()
-            db_logger.info(f"{tweet_data=}")
-            return True if tweet_data else False
 
     @classmethod
     async def add_tweet(

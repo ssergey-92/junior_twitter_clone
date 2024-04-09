@@ -1,16 +1,16 @@
 from contextlib import asynccontextmanager
-from typing import Annotated, Any, Union
+from typing import Annotated, Union
 
 from fastapi import FastAPI, Form, Header, UploadFile, Response, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import PlainTextResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.requests import Request as StarletteRequest
 
 from database import init_db, close_db_connection, User
 from models import HandleEndpoint
-from my_logger import get_stream_logger
+from project_logger import get_stream_logger
 from schemas import (
     AddTweetIn,
     AddTweetOut,
@@ -140,22 +140,14 @@ async def add_media_file(
         file: Annotated[UploadFile, Form()],
         api_key: Annotated[str, Header()],
         response: Response) -> Union[AddMediaOut, ErrorResponse]:
-    # change type to str
-
-    routes_logger.info(f"{api_key=}, {file=}")
-
-    data, http_code = await HandleEndpoint.add_media_file(
-        api_key,
-        file
-    )
+    routes_logger.info(f"{api_key=}, {file.filename=}")
+    data, http_code = await HandleEndpoint.add_media_file(api_key, file)
     routes_logger.info(f"{data=}, {http_code=}")
     response.status_code = http_code
     if http_code == 201:
         return AddMediaOut(**data)
     else:
         return ErrorResponse(**data)
-
-    # return {"media_id": 1}
 
 
 @app.delete(
@@ -164,7 +156,8 @@ async def add_media_file(
     responses={
         200: {"description": "OK", "model": SuccessResponse},
         400: {"description": "Bad Request", "model": ErrorResponse},
-        401: {"description": "Unauthorized", "model": ErrorResponse}
+        401: {"description": "Unauthorized", "model": ErrorResponse},
+        403: {"description": "Forbidden", "model": ErrorResponse}
     }
 )
 async def delete_tweet(
@@ -226,8 +219,6 @@ async def dislike_tweet_by_id(
     else:
         return ErrorResponse(**data)
 
-    # return {}
-
 
 @app.post(
     path="/api/users/{id}/follow",
@@ -250,8 +241,6 @@ async def follow_other_user(
         return SuccessResponse()
     else:
         return ErrorResponse(**data)
-
-    # return {}
 
 
 @app.delete(
@@ -292,7 +281,7 @@ async def get_tweet_feed(
     routes_logger.info(f"{api_key=}")
 
     # data, http_code = await HandleEndpoint.get_user_tweet_feed(api_key)
-    data, http_code = await HandleEndpoint.get_full_tweet_feed(api_key)
+    data, http_code = await HandleEndpoint.get_full_tweet_feed()
 
     routes_logger.info(f"{data=}, {http_code=}")
     response.status_code = http_code
@@ -300,26 +289,6 @@ async def get_tweet_feed(
         return TweetFeedOut(**data)
     else:
         return ErrorResponse(**data)
-
-    # return {
-    #     "tweets": [
-    #         {
-    #             "id": 1,
-    #             "content": "some content for tweet feed ",
-    #             "attachments": ["link_1"],
-    #             "author": {
-    #                 "id": 1,
-    #                 "name": "Sergey_1",
-    #             },
-    #             "likes": [
-    #                 {
-    #                     "user_id": 2,
-    #                     "name": "Alex",
-    #                 }
-    #             ],
-    #         }
-    #     ]
-    # }
 
 
 @app.get(
@@ -358,41 +327,10 @@ async def get_user_profile_details(
         api_key: Annotated[str, Header()],
         response: Response) -> Union[UserProfileDetailsOut, ErrorResponse]:
     routes_logger.info(f"{api_key=}")
-    data, http_code = await HandleEndpoint.get_user_profile_details(api_key,
-                                                                    id)
+    data, http_code = await HandleEndpoint.get_user_profile_details(id)
     routes_logger.info(f"{data=}, {http_code=}")
     response.status_code = http_code
     if http_code == 200:
         return UserProfileDetailsOut(**data)
     else:
         return ErrorResponse(**data)
-
-    # get_user_profile_details
-    # return {
-    #     "user": {
-    #         "id": 2,
-    #         "name": 'other_user',
-    #         "followers": [
-    #             {
-    #                 "id": 3,
-    #                 "name": "follower 3"
-    #             }
-    #         ],
-    #         "following": [
-    #             {
-    #                 "id": 4,
-    #                 "name": "following 4"
-    #             }
-    #         ]
-    #     }
-    # }
-
-    # get_own_profile_details
-    # return {
-    #     "user": {
-    #         "id": 1,
-    #         "name": api_key,
-    #         "followers": [{"id": 0, "name": "follower 1"}],
-    #         "following": [{"id": 2, "name": "following 1"}],
-    #     }
-    # }
