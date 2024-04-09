@@ -1,4 +1,5 @@
 from __future__ import annotations
+from os import environ as os_environ
 from typing import List, Optional
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -12,8 +13,10 @@ from sqlalchemy import (ARRAY, Column, delete, desc, ForeignKey, func, Insert,
 from project_logger import get_stream_logger
 
 db_logger = get_stream_logger("db_logger")
+DATABASE_URL = os_environ.get("DATABASE_URL")
+db_logger.info(f"{DATABASE_URL=}")
 # DATABASE_URL = "postgresql+asyncpg://admin:admin@127.0.0.1:5432/fake_twitter"
-DATABASE_URL = "postgresql+asyncpg://admin:admin@db:5432/fake_twitter"
+# DATABASE_URL = "postgresql+asyncpg://admin:admin@db:5432/fake_twitter"
 async_engine = create_async_engine(DATABASE_URL)
 async_session = async_sessionmaker(bind=async_engine)
 Base = declarative_base()

@@ -5,6 +5,8 @@ services:
     build:
       context: server
     stop_signal: SIGKILL
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://admin:admin@db:5432/fake_twitter
     networks:
       - fake_twitter
     ports:
