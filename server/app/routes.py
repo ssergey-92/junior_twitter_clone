@@ -1,3 +1,4 @@
+from asyncio import run as async_run
 from contextlib import asynccontextmanager
 from typing import Annotated, Union
 
@@ -29,7 +30,7 @@ UNAUTHORIZED_MESSAGE = {
 routes_logger = get_stream_logger("routes_logger")
 
 
-def get_fake_twitter_app() -> FastAPI:
+async def get_fake_twitter_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> None:
         """
@@ -62,7 +63,6 @@ def get_fake_twitter_app() -> FastAPI:
                 status_code=401
             )
 
-
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(
             request: StarletteRequest,
@@ -79,7 +79,6 @@ def get_fake_twitter_app() -> FastAPI:
             status_code=exc.status_code
         )
 
-
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(
             request: StarletteRequest,
@@ -95,7 +94,6 @@ def get_fake_twitter_app() -> FastAPI:
             ),
             status_code=400
         )
-
 
     @app.post(
         path="/api/tweets",
@@ -120,7 +118,6 @@ def get_fake_twitter_app() -> FastAPI:
         else:
             return ErrorResponse(**data)
 
-
     @app.post(
         path="/api/medias",
         description="Add media file",
@@ -142,7 +139,6 @@ def get_fake_twitter_app() -> FastAPI:
             return AddMediaOut(**data)
         else:
             return ErrorResponse(**data)
-
 
     @app.delete(
         path="/api/tweets/{id}",
@@ -167,7 +163,6 @@ def get_fake_twitter_app() -> FastAPI:
         else:
             return ErrorResponse(**data)
 
-
     @app.post(
         path="/api/tweets/{id}/likes",
         description="Like tweet by id",
@@ -189,7 +184,6 @@ def get_fake_twitter_app() -> FastAPI:
             return SuccessResponse()
         else:
             return ErrorResponse(**data)
-
 
     @app.delete(
         path="/api/tweets/{id}/likes",
@@ -213,7 +207,6 @@ def get_fake_twitter_app() -> FastAPI:
         else:
             return ErrorResponse(**data)
 
-
     @app.post(
         path="/api/users/{id}/follow",
         description="Follow user by id",
@@ -236,7 +229,6 @@ def get_fake_twitter_app() -> FastAPI:
         else:
             return ErrorResponse(**data)
 
-
     @app.delete(
         path="/api/users/{id}/follow",
         description="Unsubscribe from user by id",
@@ -258,7 +250,6 @@ def get_fake_twitter_app() -> FastAPI:
             return SuccessResponse()
         else:
             return ErrorResponse(**data)
-
 
     @app.get(
         path="/api/tweets",
@@ -283,7 +274,6 @@ def get_fake_twitter_app() -> FastAPI:
             return TweetFeedOut(**data)
         else:
             return ErrorResponse(**data)
-
 
     @app.get(
         path="/api/users/me",
@@ -331,4 +321,4 @@ def get_fake_twitter_app() -> FastAPI:
     return app
 
 
-application = get_fake_twitter_app()
+application = async_run(get_fake_twitter_app())

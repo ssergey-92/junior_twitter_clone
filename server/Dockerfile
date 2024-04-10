@@ -5,7 +5,11 @@ RUN apt-get update && apt-get install -y python3-dev supervisor nginx && rm -rf 
 COPY requirements.txt /app/
 RUN pip install -r /app/requirements.txt
 
-COPY app/ /app/
+COPY app/database.py /app/
+COPY app/models.py /app/
+COPY app/project_logger.py /app/
+COPY app/routes.py /app/
+COPY app/schemas.py /app/
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY ./static /usr/share/nginx/html
 COPY supervisord.ini /etc/supervisor/conf.d/supervisord.ini

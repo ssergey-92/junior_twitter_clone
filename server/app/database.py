@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.dialects.postgresql import Insert as PostgresqlInsert
+from sqlalchemy.pool import NullPool
 from sqlalchemy.orm import (backref, declarative_base, joinedload,
                             mapped_column, Mapped, relationship)
 from sqlalchemy import (ARRAY, Column, delete, desc, ForeignKey, func, Insert,
@@ -17,7 +18,18 @@ DATABASE_URL = os_environ.get("DATABASE_URL")
 db_logger.info(f"{DATABASE_URL=}")
 # DATABASE_URL = "postgresql+asyncpg://admin:admin@127.0.0.1:5432/fake_twitter"
 # DATABASE_URL = "postgresql+asyncpg://admin:admin@db:5432/fake_twitter"
-async_engine = create_async_engine(DATABASE_URL)
+
+
+def get_async_engine():
+    if os_environ.get("PYTEST_ASYNC_ENGINE", None):
+        db_logger.info(f"Creating async engine for pytest")
+        return create_async_engine(DATABASE_URL, poolclass=NullPool)
+    else:
+        db_logger.info(f"Creating async engine for production")
+        return create_async_engine(DATABASE_URL)
+
+
+async_engine = get_async_engine()
 async_session = async_sessionmaker(bind=async_engine)
 Base = declarative_base()
 
@@ -528,7 +540,7 @@ async def init_db() -> None:
 
 
 async def close_db_connection() -> None:
-    """Close dispose connection with db"""
+    """Dispose connection with db"""
 
     db_logger.info("Disposing async engine")
     await async_engine.dispose()
