@@ -89,7 +89,7 @@ async def get_fake_twitter_app() -> FastAPI:
                 {
                     "result": False,
                     "error_type": "Bad Request",
-                    "error_message": exc.errors(),
+                    "error_message": str(exc.errors()),
                 }
             ),
             status_code=400
@@ -113,10 +113,8 @@ async def get_fake_twitter_app() -> FastAPI:
         data, http_code = await HandleEndpoint.add_tweet(api_key, new_tweet)
         routes_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
-        if http_code == 201:
-            return AddTweetOut(**data)
-        else:
-            return ErrorResponse(**data)
+        return AddTweetOut(**data)
+
 
     @app.post(
         path="/api/medias",

@@ -1,5 +1,5 @@
 from datetime import datetime
-from os import path as os_path
+from os import path as os_path, environ as os_environ
 from random import randint
 from re import findall
 from typing import Optional
@@ -10,7 +10,7 @@ from fastapi import UploadFile
 from database import User, MediaFile, Tweet, TweetLike
 from schemas import AddTweetIn
 
-IMAGES_PATH = "/usr/share/nginx/html/images"
+
 ALLOWED_IMAGE_EXTENSIONS = ("png", "jpg", "jpeg")
 error_template_message = {
     "result": False,
@@ -58,7 +58,7 @@ class HandleEndpoint:
                 f"Support only filename formats: "
                 f"{ALLOWED_IMAGE_EXTENSIONS}!"
             )
-            return  error_template_message, 400
+            return error_template_message, 400
 
     @staticmethod
     def _make_safe_file_name(file_name: str) -> str:
@@ -102,10 +102,11 @@ class HandleEndpoint:
         return tweet_feed
 
     @staticmethod
-    async def _delete_files_from_sys(media_files_names: list, path: str) \
-            -> None:
+    async def _delete_files_from_sys(
+            media_files_names: list,
+            images_dir_path: str) -> None:
         for i_media_file in media_files_names:
-            await aio_os.remove(os_path.join(path, i_media_file))
+            await aio_os.remove(os_path.join(images_dir_path, i_media_file))
 
     @staticmethod
     async def _delete_media_files(api_key: str, files_ids: list) -> None:
@@ -113,16 +114,18 @@ class HandleEndpoint:
             user_name=api_key,
             files_ids=files_ids
         )
+        images_dir_path = os_environ.get("SAVE_MEDIA_PATH")
         await HandleEndpoint._delete_files_from_sys(
             deleted_file_names_from_db,
-            IMAGES_PATH
+            images_dir_path
         )
 
     @staticmethod
     async def _save_media_file_in_sys(
             media_file: UploadFile,
             unique_filename: str) -> None:
-        media_file_path = os_path.join(IMAGES_PATH, unique_filename)
+        images_dir_path = os_environ.get("SAVE_MEDIA_PATH")
+        media_file_path = os_path.join(images_dir_path, unique_filename)
         async with aio_open(media_file_path, 'wb') as out_file:
             media_file_data = await media_file.read()
             await out_file.write(media_file_data)

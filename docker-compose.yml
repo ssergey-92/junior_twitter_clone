@@ -7,6 +7,7 @@ services:
     stop_signal: SIGKILL
     environment:
       - DATABASE_URL=postgresql+asyncpg://admin:admin@db:5432/fake_twitter
+      - SAVE_MEDIA_PATH=/usr/share/nginx/html/images
     networks:
       - fake_twitter
     ports:

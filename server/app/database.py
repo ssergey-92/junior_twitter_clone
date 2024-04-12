@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import Insert as PostgresqlInsert
 from sqlalchemy.pool import NullPool
 from sqlalchemy.orm import (backref, declarative_base, joinedload,
                             mapped_column, Mapped, relationship)
-from sqlalchemy import (ARRAY, Column, delete, desc, ForeignKey, func, Insert,
+from sqlalchemy import (ARRAY, Column, delete, desc, ForeignKey, func, insert,
                         Integer, select, Table,  UniqueConstraint)
 
 
@@ -77,8 +77,8 @@ class User(Base):
                 select(User.id).where(User.name == user_name)
             )
             user_id = user_query.scalar_one_or_none()
-            db_logger.info(f"Details of {user_name=}: {user_id=}")
-            return True if user_id else False
+        db_logger.info(f"Details of {user_name=}: {user_id=}")
+        return True if user_id else False
 
     @classmethod
     async def get_user_id_by_name(cls, user_name: str) -> int:
@@ -90,8 +90,8 @@ class User(Base):
                 select(User.id).where(User.name == user_name)
             )
             user_id = user_query.scalar()
-            db_logger.info(f"{user_name=}: {user_id=}")
-            return user_id
+        db_logger.info(f"{user_name=}: {user_id=}")
+        return user_id
 
     @classmethod
     async def add_user(cls, user_name: str) -> None:
@@ -116,8 +116,8 @@ class User(Base):
                 )
             )
             user = user_query.unique().scalar_one_or_none()
-            db_logger.info(f"Details of {user_name=}: {user}")
-            return user
+        db_logger.info(f"Details of {user_name=}: {user}")
+        return user
 
     @classmethod
     async def get_user_by_id(cls, user_id: int) -> Optional[User]:
@@ -135,8 +135,8 @@ class User(Base):
                 )
             )
             user = user_query.unique().scalar_one_or_none()
-            db_logger.info(f"Details {user_id=}: {user}")
-            return user
+        db_logger.info(f"Details {user_id=}: {user}")
+        return user
 
     @staticmethod
     async def follow_other_user(follower_id: int, followed_id: int) \
@@ -159,8 +159,8 @@ class User(Base):
                 )
                 result = await session.execute(do_nothing_on_conflict)
                 follow_details = result.one_or_none()
-                db_logger.info(f'{follow_details=}')
-                return follow_details
+        db_logger.info(f'{follow_details=}')
+        return follow_details
 
     @staticmethod
     async def unfollow_user(follower_id: int, followed_id: int) \
@@ -179,8 +179,8 @@ class User(Base):
                                followers.c.followed_id)
                 )
                 delete_details = delete_query.one_or_none()
-                db_logger.info(f'{delete_details=}')
-                return delete_details
+        db_logger.info(f'{delete_details=}')
+        return delete_details
 
 
 class TweetLike(Base):
@@ -225,8 +225,8 @@ class TweetLike(Base):
                     do_nothing_on_conflict.returning(cls.id)
                 )
                 tweet_like_id = result.scalar_one_or_none()
-                db_logger.info(f'{tweet_like_id=}')
-                return tweet_like_id
+        db_logger.info(f'{tweet_like_id=}')
+        return tweet_like_id
 
     @classmethod
     async def dislike_tweet(cls, user_name: str, tweet_id: int) \
@@ -239,8 +239,8 @@ class TweetLike(Base):
                            cls.tweet_id == tweet_id)
                     .returning(cls.id)
                 )
-                tweet_like_id = delete_query.scalar_one_or_none()
-                return tweet_like_id
+        tweet_like_id = delete_query.scalar_one_or_none()
+        return tweet_like_id
 
 
 class MediaFile(Base):
@@ -261,13 +261,24 @@ class MediaFile(Base):
         async with async_session() as session:
             async with session.begin():
                 add_query = await session.execute(
-                    Insert(cls)
+                    insert(cls)
                     .values(user_name=user_name, file_name=file_name)
                     .returning(cls.id)
                 )
                 media_file_id = add_query.scalar()
-                db_logger.info(f"Added {media_file_id=}")
-                return media_file_id
+        db_logger.info(f"Added {media_file_id=}")
+        return media_file_id
+
+    @classmethod
+    async def get_total_media_file(cls) -> int:
+        db_logger.info(
+            f"Get total media files from table '{cls.__tablename__}'"
+        )
+        async with async_session() as session:
+            get_query = await session.execute(select(func.count(cls.id)))
+            total_media_files = get_query.scalar()
+        db_logger.info(f"{total_media_files=}")
+        return total_media_files
 
     @classmethod
     async def get_media_files_names(cls, ids_list: list) \
@@ -279,8 +290,8 @@ class MediaFile(Base):
                 .where(cls.id.in_(ids_list))
             )
             file_names = select_query.scalars().all()
-            db_logger.info(f'{file_names=}')
-            return list(file_names)
+        db_logger.info(f'{file_names=}')
+        return list(file_names)
 
     @classmethod
     async def bulk_delete(cls, user_name: str, files_ids: list) \
@@ -298,7 +309,7 @@ class MediaFile(Base):
                     .returning(cls.file_name)
                 )
                 deleted_file_names = delete_query.scalars().all()
-            db_logger.info(f'{deleted_file_names=}')
+        db_logger.info(f'{deleted_file_names=}')
         return list(deleted_file_names)
 
 
@@ -336,7 +347,7 @@ class Tweet(Base):
         async with async_session() as session:
             async with session.begin():
                 add_query = await session.execute(
-                    Insert(cls)
+                    insert(cls)
                     .values(
                         author_name=author_name,
                         tweet_data=tweet_data,
@@ -344,8 +355,8 @@ class Tweet(Base):
                     .returning(cls.id)
                 )
                 tweet_id = add_query.scalar()
-            db_logger.info(f"Added {tweet_id=}")
-            return tweet_id
+        db_logger.info(f"Added {tweet_id=}")
+        return tweet_id
 
     @classmethod
     async def delete_tweet(cls, author_name: str, tweet_id: int) \
@@ -364,8 +375,17 @@ class Tweet(Base):
                                cls.tweet_media_ids)
                 )
                 deleted_details = delete_query.one_or_none()
-                db_logger.info(f"Deleted tweet {deleted_details=}")
-                return deleted_details
+        db_logger.info(f"Deleted tweet {deleted_details=}")
+        return deleted_details
+
+    @classmethod
+    async def get_total_tweets(cls) -> int:
+        db_logger.info(f"Get total tweets from table '{cls.__tablename__}'")
+        async with async_session() as session:
+            select_query = await session.execute(select(func.count(cls.id)))
+            total_tweets = select_query.scalar()
+        db_logger.info(f"{total_tweets=}")
+        return total_tweets
 
     @classmethod
     async def get_tweets_by_author_sorted_by_likes(cls, followed_names: list) \
@@ -389,7 +409,7 @@ class Tweet(Base):
                 )
             )
             user_tweets = select_query.unique().scalars().all()
-            db_logger.info(f"{user_tweets=}")
+        db_logger.info(f"{user_tweets=}")
         return list(user_tweets)
 
     @classmethod
@@ -412,7 +432,7 @@ class Tweet(Base):
                 )
             )
             all_tweets = select_query.unique().scalars().all()
-            db_logger.info(f"{all_tweets=}")
+        db_logger.info(f"{all_tweets=}")
         return list(all_tweets)
 
 
