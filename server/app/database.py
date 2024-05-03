@@ -242,6 +242,17 @@ class TweetLike(Base):
         tweet_like_id = delete_query.scalar_one_or_none()
         return tweet_like_id
 
+    @classmethod
+    async def get_total_likes(cls) -> int:
+        db_logger.info(
+            f"Get total likes from table '{cls.__tablename__}'"
+        )
+        async with async_session() as session:
+            get_query = await session.execute(select(func.count(cls.id)))
+            total_likes = get_query.scalar()
+        db_logger.info(f"{total_likes=}")
+        return total_likes
+
 
 class MediaFile(Base):
     __tablename__ = "media_files"

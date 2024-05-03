@@ -15,7 +15,7 @@ from .common_data_for_tests import (
     TWEET_3
 
 )
-from server.app.database import Tweet
+from server.app.database import MediaFile, Tweet, TweetLike
 
 INVALID_DELETE_TWEET_ENDPOINTS = (
     delete_tweet_endpoint.format(id='ten'),
@@ -94,43 +94,27 @@ class TestDeleteTweetEndpoint:
                 headers=VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER[1][1]
             )
         after_total_images = len(os_listdir(SAVE_MEDIA_ABS_PATH))
+
         assert before_total_images - 2 == after_total_images
 
-    # @staticmethod
-    # @pytest_mark.asyncio
-    # async def test_endpoint_that_tweet_media_file_deleted_from_db(
-    #         client: AsyncClient,
-    #         init_test_data_for_db: None,
-    #         init_midia_file_for_test: None) -> None:
-    #     await client.delete(
-    #             url=VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER[0][0],
-    #             headers=VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER[0][1]
-    #         )
-    #
-    #
-    # @staticmethod
-    # @pytest_mark.asyncio
-    # async def test_endpoint_that_tweet_deleted_from_db(
-    #         client: AsyncClient,
-    #         init_test_data_for_db: None,
-    #         init_midia_file_for_test: None) -> None:
-    #     await client.delete(
-    #             url=VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER[0][0],
-    #             headers=VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER[0][1]
-    #         )
+    @staticmethod
+    @pytest_mark.asyncio
+    async def test_endpoint_that_tweet_details_deleted_from_db(
+            client: AsyncClient,
+            init_test_data_for_db: None,
+            init_midia_file_for_test: None) -> None:
 
+        total_tweets_before = await Tweet.get_total_tweets()
+        total_media_before = await MediaFile.get_total_media_file()
+        total_likes_before = await TweetLike.get_total_likes()
+        await client.delete(
+                url=VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER[1][0],
+                headers=VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER[1][1]
+            )
+        total_tweets_after = await Tweet.get_total_tweets()
+        total_media_after = await MediaFile.get_total_media_file()
+        total_likes_after = await TweetLike.get_total_likes()
 
-
-    # @staticmethod
-    # @pytest_mark.asyncio
-    # async def test_endpoint_that_tweet_added_in_db(
-    #         client: AsyncClient,
-    #         init_test_data_for_db: None, ) -> None:
-    #     total_tweets_before = await Tweet.get_total_tweets()
-    #     await client.post(
-    #         url=ADD_TWEET_ENDPOINT,
-    #         headers=AUTHORIZED_HEADER,
-    #         json=CORRECT_TWEET_BODY_DATA_AND_RESPONSE[0][0]
-    #     )
-    #     total_tweets_after = await Tweet.get_total_tweets()
-    #     assert total_tweets_before + 1 == total_tweets_after
+        assert total_tweets_before - 1 == total_tweets_after
+        assert total_media_before - 2 == total_media_after
+        assert total_likes_before - 2 == total_likes_after

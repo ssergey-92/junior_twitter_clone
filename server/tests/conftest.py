@@ -135,26 +135,25 @@ async def init_test_data_for_db(recreate_all_tables: None,
     )
     await test_session.commit()
 
+
 @sync_fixture(scope="function")
-def delete_media_files_from_test() -> None:
+def init_test_folders() -> None:
+    if os_path.exists(SAVE_MEDIA_ABS_PATH):
+        print(66666666666666666666666666666666, 'delete_media_files_from_test')
+        shutil_rmtree(SAVE_MEDIA_ABS_PATH)
+
+    print(44444444444444444555555555555555555, ' init_test_folders')
+    os_mkdir(SAVE_MEDIA_ABS_PATH)
     yield
     print(66666666666666666666666666666666, 'delete_media_files_from_test')
-    if os_path.exists(SAVE_MEDIA_ABS_PATH):
-        shutil_rmtree(SAVE_MEDIA_ABS_PATH)
+    shutil_rmtree(SAVE_MEDIA_ABS_PATH)
+
 
 @sync_fixture(scope="function")
-def init_test_folders(delete_media_files_from_test) -> None:
-    print(44444444444444444555555555555555555, 'delete_media_files_from_test')
-    if not os_path.exists(SAVE_MEDIA_ABS_PATH):
-        os_mkdir(SAVE_MEDIA_ABS_PATH)
-
-@sync_fixture(scope="function")
-def init_midia_file_for_test(delete_media_files_from_test) -> None:
+def init_midia_file_for_test(init_test_folders) -> None:
     print(55555555555555555555555555, 'handle_saving_images_during_test')
     print(SAVE_MEDIA_ABS_PATH)
-    if os_path.exists(SAVE_MEDIA_ABS_PATH):
-        shutil_rmtree(SAVE_MEDIA_ABS_PATH)
-    os_mkdir(SAVE_MEDIA_ABS_PATH)
+
     for i_filename in os_listdir(DEFAULT_TEST_IMAGES_PATH):
         shutil_copy(
             os_path.join(DEFAULT_TEST_IMAGES_PATH, i_filename),

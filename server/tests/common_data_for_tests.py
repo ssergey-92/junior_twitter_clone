@@ -75,6 +75,7 @@ LIKE_3_1 = {"tweet_id": 3, "user_name": TEST_USER_1["name"]}
 LIKE_3_2 = {"tweet_id": 3, "user_name": TEST_USER_2["name"]}
 LIKE_3_3 = {"tweet_id": 3, "user_name": TEST_USER_3["name"]}
 
+
 def open_test_image(file_name: str) -> BinaryIO:
     abs_image_path = os_path.abspath(
         os_path.join(DEFAULT_TEST_IMAGES_PATH, file_name)
