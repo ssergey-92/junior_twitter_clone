@@ -6,28 +6,31 @@ from .common_data_for_tests import (
     AUTHORIZED_HEADER,
     BAD_REQUEST_STATUS_CODE,
     ERROR_MESSAGE,
-    follow_other_user_endpoint)
+    unfollow_other_user_endpoint)
 
-INVALID_FOLLOW_USER_ENDPOINTS = (
-    follow_other_user_endpoint.format(id="ten"),
-    follow_other_user_endpoint.format(id=())
+INVALID_UNFOLLOW_USER_ENDPOINTS = (
+    unfollow_other_user_endpoint.format(id="ten"),
+    unfollow_other_user_endpoint.format(id=())
 )
-USER_CAN_FOLLOW_USER = {
+USER_CAN_UNFOLLOW_USER = {
+    "user_header": AUTHORIZED_HEADER,
+    "followed_user_id": 2
+}
+USER_NOT_FOLLOWING_USER = {
     "user_header": AUTHORIZED_HEADER,
     "followed_user_id": 3
 }
-USER_FOLLOWED_USER = {"user_header": AUTHORIZED_HEADER, "followed_user_id": 2}
-CORRECT_FOLLOW_USER_RESPONSE = {"result": True}
+CORRECT_UNFOLLOW_USER_RESPONSE = {"result": True}
 
 
-class TestFollowOtherUserEndpoint:
+class TestUnfollowOtherUserEndpoint:
 
     @staticmethod
     @pytest_mark.asyncio
     async def test_validation_handler_for_incorrect_path_parameter(
             client: AsyncClient) -> None:
-        for i_endpoint in INVALID_FOLLOW_USER_ENDPOINTS:
-            response = await client.post(
+        for i_endpoint in INVALID_UNFOLLOW_USER_ENDPOINTS:
+            response = await client.delete(
                 url=i_endpoint,
                 headers=AUTHORIZED_HEADER
             )
@@ -44,25 +47,25 @@ class TestFollowOtherUserEndpoint:
     async def test_endpoint_for_correct_response(
             client: AsyncClient,
             init_test_data_for_db: None) -> None:
-        response = await client.post(
-            url=follow_other_user_endpoint.format(
-                id=USER_CAN_FOLLOW_USER["followed_user_id"]
+        response = await client.delete(
+            url=unfollow_other_user_endpoint.format(
+                id=USER_CAN_UNFOLLOW_USER["followed_user_id"]
             ),
-            headers=USER_CAN_FOLLOW_USER["user_header"]
+            headers=USER_CAN_UNFOLLOW_USER["user_header"]
             )
-        assert response.json() == CORRECT_FOLLOW_USER_RESPONSE
+        assert response.json() == CORRECT_UNFOLLOW_USER_RESPONSE
         assert response.status_code == 201
 
     @staticmethod
     @pytest_mark.asyncio
-    async def test_that_user_can_not_follow_user_two_times(
+    async def test_that_user_can_not_unfollow_not_followed_user(
             client: AsyncClient,
             init_test_data_for_db: None) -> None:
-        response = await client.post(
-            url=follow_other_user_endpoint.format(
-                id=USER_FOLLOWED_USER["followed_user_id"]
+        response = await client.delete(
+            url=unfollow_other_user_endpoint.format(
+                id=USER_NOT_FOLLOWING_USER["followed_user_id"]
             ),
-            headers=USER_FOLLOWED_USER["user_header"]
+            headers=USER_NOT_FOLLOWING_USER["user_header"]
             )
         response_data = response.json()
         assert response.status_code == BAD_REQUEST_STATUS_CODE
@@ -74,19 +77,19 @@ class TestFollowOtherUserEndpoint:
 
     @staticmethod
     @pytest_mark.asyncio
-    async def test_that_followed_details_inserted_in_db(
+    async def test_that_followed_details_removed_from_db(
             client: AsyncClient,
             init_test_data_for_db: None) -> None:
         total_followed_before = await User.get_total_followed_by_name(
             AUTHORIZED_HEADER["api-key"]
         )
-        response = await client.post(
-            url=follow_other_user_endpoint.format(
-                id=USER_CAN_FOLLOW_USER["followed_user_id"]
+        response = await client.delete(
+            url=unfollow_other_user_endpoint.format(
+                id=USER_CAN_UNFOLLOW_USER["followed_user_id"]
             ),
-            headers=USER_CAN_FOLLOW_USER["user_header"]
+            headers=USER_CAN_UNFOLLOW_USER["user_header"]
             )
         total_followed_after = await User.get_total_followed_by_name(
             AUTHORIZED_HEADER["api-key"]
         )
-        assert total_followed_before + 1 == total_followed_after
+        assert total_followed_before - 1 == total_followed_after
