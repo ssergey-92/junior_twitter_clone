@@ -182,6 +182,20 @@ class User(Base):
         db_logger.info(f'{delete_details=}')
         return delete_details
 
+    @classmethod
+    async def get_total_followed_by_name(cls, user_name: str) -> int:
+        db_logger.info(
+            f"Get total followed users from table '{cls.__tablename__}'"
+        )
+        async with async_session() as session:
+            get_query = await session.execute(
+                select(func.count(cls.followed)).
+                where(cls.name == user_name)
+            )
+            total_followed = get_query.scalar()
+        db_logger.info(f"{total_followed=}")
+        return total_followed
+
 
 class TweetLike(Base):
     __tablename__ = "tweets_likes"
