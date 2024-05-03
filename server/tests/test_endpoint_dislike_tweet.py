@@ -6,8 +6,12 @@ from .common_data_for_tests import (
     AUTHORIZED_HEADER,
     BAD_REQUEST_STATUS_CODE,
     ERROR_MESSAGE,
-    dislike_tweet_endpoint)
+    FAKE_TWITTER_ENDPOINTS
+)
 
+dislike_tweet_endpoint = FAKE_TWITTER_ENDPOINTS["dislike_tweet"]["endpoint"]
+DISLIKE_TWEET_HTTP_METHOD = (
+    FAKE_TWITTER_ENDPOINTS)["dislike_tweet"]["http_method"]
 INVALID_DISLIKE_TWEET_ENDPOINTS = (
     dislike_tweet_endpoint.format(id="ten"),
     dislike_tweet_endpoint.format(id=())
@@ -17,14 +21,15 @@ USER_CANNOT_DISLIKE_TWEET = {"user_header": AUTHORIZED_HEADER, "tweet_id": 2}
 CORRECT_DISLIKE_TWEET_RESPONSE = {"result": True}
 
 
-class TestLikeTweetEndpoint:
+class TestDislikeTweetEndpoint:
 
     @staticmethod
     @pytest_mark.asyncio
     async def test_validation_handler_for_incorrect_path_parameter(
             client: AsyncClient) -> None:
         for i_endpoint in INVALID_DISLIKE_TWEET_ENDPOINTS:
-            response = await client.delete(
+            response = await client.request(
+                method=DISLIKE_TWEET_HTTP_METHOD,
                 url=i_endpoint,
                 headers=AUTHORIZED_HEADER
             )
@@ -41,7 +46,8 @@ class TestLikeTweetEndpoint:
     async def test_endpoint_for_correct_response(
             client: AsyncClient,
             init_test_data_for_db: None) -> None:
-        response = await client.delete(
+        response = await client.request(
+            method=DISLIKE_TWEET_HTTP_METHOD,
             url=dislike_tweet_endpoint.format(
                 id=USER_CAN_DISLIKE_TWEET["tweet_id"]
             ),
@@ -55,7 +61,8 @@ class TestLikeTweetEndpoint:
     async def test_that_user_can_not_dislike_not_liked_tweet(
             client: AsyncClient,
             init_test_data_for_db: None) -> None:
-        response = await client.delete(
+        response = await client.request(
+            method=DISLIKE_TWEET_HTTP_METHOD,
             url=dislike_tweet_endpoint.format(
                 id=USER_CANNOT_DISLIKE_TWEET["tweet_id"]
             ),
@@ -75,7 +82,8 @@ class TestLikeTweetEndpoint:
             client: AsyncClient,
             init_test_data_for_db: None) -> None:
         total_likes_before = await TweetLike.get_total_likes()
-        response = await client.delete(
+        response = await client.request(
+            method=DISLIKE_TWEET_HTTP_METHOD,
             url=dislike_tweet_endpoint.format(
                 id=USER_CAN_DISLIKE_TWEET["tweet_id"]
             ),

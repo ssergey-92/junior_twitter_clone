@@ -3,11 +3,11 @@ from pytest import mark as pytest_mark
 from os import listdir as os_listdir
 
 from .common_data_for_tests import (
-    ADD_MEDIA_ENDPOINT,
     AUTHORIZED_HEADER,
     BAD_REQUEST_STATUS_CODE,
     CREATED_STATUS_CODE,
     ERROR_MESSAGE,
+    FAKE_TWITTER_ENDPOINTS,
     FILE_NAME_1,
     FILE_NAME_2,
     FILE_NAME_3,
@@ -18,6 +18,8 @@ from .common_data_for_tests import (
 )
 from server.app.database import MediaFile
 
+ADD_MEDIA_ENDPOINT = FAKE_TWITTER_ENDPOINTS["add_media"]["endpoint"]
+ADD_MEDIA_HTTP_METHOD = FAKE_TWITTER_ENDPOINTS["add_media"]["http_method"]
 CORRECT_BODY_WITH_FILE_NAME_FOR_RENAME = {
     "file": open_test_image(MEDIA_FILE_NAME_FOR_RENAME)
 }
@@ -44,7 +46,8 @@ class TestAddMediaEndpoint:
     async def test_validation_handler_for_incorrect_request_form(
             client: AsyncClient) -> None:
         for i_data in INCORRECT_MEDIA_BODY_DATA:
-            response = await client.post(
+            response = await client.request(
+                method=ADD_MEDIA_HTTP_METHOD,
                 url=ADD_MEDIA_ENDPOINT,
                 headers=AUTHORIZED_HEADER,
                 files=i_data
@@ -62,7 +65,8 @@ class TestAddMediaEndpoint:
             client: AsyncClient,
             init_test_data_for_db: None) -> None:
         for i_data in CORRECT_BODY_WITH_UNSUPPORTED_FILE_EXTENSION:
-            response = await client.post(
+            response = await client.request(
+                method=ADD_MEDIA_HTTP_METHOD,
                 url=ADD_MEDIA_ENDPOINT,
                 headers=AUTHORIZED_HEADER,
                 files=i_data
@@ -81,7 +85,8 @@ class TestAddMediaEndpoint:
             init_test_data_for_db: None,
             init_test_folders: None) -> None:
         for i_data in CORRECT_MEDIA_BODY_DATA_AND_RESPONSE:
-            response = await client.post(
+            response = await client.request(
+                method=ADD_MEDIA_HTTP_METHOD,
                 url=ADD_MEDIA_ENDPOINT,
                 headers=AUTHORIZED_HEADER,
                 files=i_data[0]
@@ -96,7 +101,8 @@ class TestAddMediaEndpoint:
             init_test_data_for_db: None,
             init_test_folders: None) -> None:
         before_total_images = len(os_listdir(SAVE_MEDIA_ABS_PATH))
-        await client.post(
+        await client.request(
+                method=ADD_MEDIA_HTTP_METHOD,
                 url=ADD_MEDIA_ENDPOINT,
                 headers=AUTHORIZED_HEADER,
                 files=CORRECT_MEDIA_BODY_DATA_AND_RESPONSE[0][0]
@@ -111,7 +117,8 @@ class TestAddMediaEndpoint:
             init_test_data_for_db: None,
             init_test_folders: None) -> None:
         for i_data in CORRECT_MEDIA_BODY_DATA_AND_RESPONSE:
-            await client.post(
+            await client.request(
+                method=ADD_MEDIA_HTTP_METHOD,
                 url=ADD_MEDIA_ENDPOINT,
                 headers=AUTHORIZED_HEADER,
                 files=CORRECT_BODY_WITH_FILE_NAME_FOR_RENAME
@@ -126,7 +133,8 @@ class TestAddMediaEndpoint:
             init_test_data_for_db: None,
             init_test_folders: None) -> None:
         before_total_media = await MediaFile.get_total_media_file()
-        await client.post(
+        await client.request(
+            method=ADD_MEDIA_HTTP_METHOD,
             url=ADD_MEDIA_ENDPOINT,
             headers=AUTHORIZED_HEADER,
             files=CORRECT_MEDIA_BODY_DATA_AND_RESPONSE[0][0]

@@ -6,9 +6,9 @@ from httpx import AsyncClient
 from .common_data_for_tests import (
     AUTHORIZED_HEADER,
     BAD_REQUEST_STATUS_CODE,
-    FORBIDDEN_STATUS_CODE,
-    delete_tweet_endpoint,
     ERROR_MESSAGE,
+    FAKE_TWITTER_ENDPOINTS,
+    FORBIDDEN_STATUS_CODE,
     SAVE_MEDIA_ABS_PATH,
     TWEET_1,
     TWEET_2,
@@ -17,6 +17,8 @@ from .common_data_for_tests import (
 )
 from server.app.database import MediaFile, Tweet, TweetLike
 
+delete_tweet_endpoint = FAKE_TWITTER_ENDPOINTS["delete_tweet"]["endpoint"]
+DELETE_TWEET_HTTP_METHOD = FAKE_TWITTER_ENDPOINTS["delete_tweet"]["http_method"]
 INVALID_DELETE_TWEET_ENDPOINTS = (
     delete_tweet_endpoint.format(id='ten'),
     delete_tweet_endpoint.format(id=()),
@@ -39,7 +41,8 @@ class TestDeleteTweetEndpoint:
     async def test_validation_handler_for_incorrect_path_parameter(
             client: AsyncClient) -> None:
         for i_endpoint in INVALID_DELETE_TWEET_ENDPOINTS:
-            response = await client.delete(
+            response = await client.request(
+                method=DELETE_TWEET_HTTP_METHOD,
                 url=i_endpoint,
                 headers=AUTHORIZED_HEADER
             )
@@ -58,7 +61,8 @@ class TestDeleteTweetEndpoint:
             init_test_data_for_db: None,
             init_midia_file_for_test: None) -> None:
         for i_data in VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER:
-            response = await client.delete(
+            response = await client.request(
+                method=DELETE_TWEET_HTTP_METHOD,
                 url=i_data[0],
                 headers=i_data[1]
             )
@@ -70,7 +74,8 @@ class TestDeleteTweetEndpoint:
     async def test_endpoint_that_user_can_delete_only_own_tweet(
             client: AsyncClient,
             init_test_data_for_db: None) -> None:
-        response = await client.delete(
+        response = await client.request(
+                method=DELETE_TWEET_HTTP_METHOD,
                 url=DELETE_NOT_OWN_TWEET_ENDPOINT_AND_HEADER[0],
                 headers=DELETE_NOT_OWN_TWEET_ENDPOINT_AND_HEADER[1]
             )
@@ -88,7 +93,8 @@ class TestDeleteTweetEndpoint:
             init_test_data_for_db: None,
             init_midia_file_for_test: None) -> None:
         before_total_images = len(os_listdir(SAVE_MEDIA_ABS_PATH))
-        await client.delete(
+        await client.request(
+                method=DELETE_TWEET_HTTP_METHOD,
                 url=VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER[1][0],
                 headers=VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER[1][1]
             )
@@ -106,7 +112,8 @@ class TestDeleteTweetEndpoint:
         total_tweets_before = await Tweet.get_total_tweets()
         total_media_before = await MediaFile.get_total_media_file()
         total_likes_before = await TweetLike.get_total_likes()
-        await client.delete(
+        await client.request(
+                method=DELETE_TWEET_HTTP_METHOD,
                 url=VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER[1][0],
                 headers=VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER[1][1]
             )

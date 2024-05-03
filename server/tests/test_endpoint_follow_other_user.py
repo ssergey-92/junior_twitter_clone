@@ -6,11 +6,14 @@ from .common_data_for_tests import (
     AUTHORIZED_HEADER,
     BAD_REQUEST_STATUS_CODE,
     ERROR_MESSAGE,
-    follow_other_user_endpoint)
+    FAKE_TWITTER_ENDPOINTS
+)
 
+follow_user_endpoint = FAKE_TWITTER_ENDPOINTS["follow_user"]["endpoint"]
+FOLLOW_USER_HTTP_METHOD = FAKE_TWITTER_ENDPOINTS["follow_user"]["http_method"]
 INVALID_FOLLOW_USER_ENDPOINTS = (
-    follow_other_user_endpoint.format(id="ten"),
-    follow_other_user_endpoint.format(id=())
+    follow_user_endpoint.format(id="ten"),
+    follow_user_endpoint.format(id=())
 )
 USER_CAN_FOLLOW_USER = {
     "user_header": AUTHORIZED_HEADER,
@@ -27,7 +30,8 @@ class TestFollowOtherUserEndpoint:
     async def test_validation_handler_for_incorrect_path_parameter(
             client: AsyncClient) -> None:
         for i_endpoint in INVALID_FOLLOW_USER_ENDPOINTS:
-            response = await client.post(
+            response = await client.request(
+                method=FOLLOW_USER_HTTP_METHOD,
                 url=i_endpoint,
                 headers=AUTHORIZED_HEADER
             )
@@ -44,8 +48,9 @@ class TestFollowOtherUserEndpoint:
     async def test_endpoint_for_correct_response(
             client: AsyncClient,
             init_test_data_for_db: None) -> None:
-        response = await client.post(
-            url=follow_other_user_endpoint.format(
+        response = await client.request(
+            method=FOLLOW_USER_HTTP_METHOD,
+            url=follow_user_endpoint.format(
                 id=USER_CAN_FOLLOW_USER["followed_user_id"]
             ),
             headers=USER_CAN_FOLLOW_USER["user_header"]
@@ -58,8 +63,9 @@ class TestFollowOtherUserEndpoint:
     async def test_that_user_can_not_follow_user_two_times(
             client: AsyncClient,
             init_test_data_for_db: None) -> None:
-        response = await client.post(
-            url=follow_other_user_endpoint.format(
+        response = await client.request(
+            method=FOLLOW_USER_HTTP_METHOD,
+            url=follow_user_endpoint.format(
                 id=USER_FOLLOWED_USER["followed_user_id"]
             ),
             headers=USER_FOLLOWED_USER["user_header"]
@@ -80,8 +86,9 @@ class TestFollowOtherUserEndpoint:
         total_followed_before = await User.get_total_followed_by_name(
             AUTHORIZED_HEADER["api-key"]
         )
-        response = await client.post(
-            url=follow_other_user_endpoint.format(
+        response = await client.request(
+            method=FOLLOW_USER_HTTP_METHOD,
+            url=follow_user_endpoint.format(
                 id=USER_CAN_FOLLOW_USER["followed_user_id"]
             ),
             headers=USER_CAN_FOLLOW_USER["user_header"]

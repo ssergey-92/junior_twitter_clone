@@ -6,11 +6,16 @@ from .common_data_for_tests import (
     AUTHORIZED_HEADER,
     BAD_REQUEST_STATUS_CODE,
     ERROR_MESSAGE,
-    unfollow_other_user_endpoint)
+    FAKE_TWITTER_ENDPOINTS
+    )
 
+unfollow_user_endpoint = FAKE_TWITTER_ENDPOINTS["unfollow_user"]["endpoint"]
+UNFOLLOW_USER_HTTP_METHOD = (
+    FAKE_TWITTER_ENDPOINTS["unfollow_user"]["http_method"]
+)
 INVALID_UNFOLLOW_USER_ENDPOINTS = (
-    unfollow_other_user_endpoint.format(id="ten"),
-    unfollow_other_user_endpoint.format(id=())
+    unfollow_user_endpoint.format(id="ten"),
+    unfollow_user_endpoint.format(id=())
 )
 USER_CAN_UNFOLLOW_USER = {
     "user_header": AUTHORIZED_HEADER,
@@ -30,7 +35,8 @@ class TestUnfollowOtherUserEndpoint:
     async def test_validation_handler_for_incorrect_path_parameter(
             client: AsyncClient) -> None:
         for i_endpoint in INVALID_UNFOLLOW_USER_ENDPOINTS:
-            response = await client.delete(
+            response = await client.request(
+                method=UNFOLLOW_USER_HTTP_METHOD,
                 url=i_endpoint,
                 headers=AUTHORIZED_HEADER
             )
@@ -47,8 +53,9 @@ class TestUnfollowOtherUserEndpoint:
     async def test_endpoint_for_correct_response(
             client: AsyncClient,
             init_test_data_for_db: None) -> None:
-        response = await client.delete(
-            url=unfollow_other_user_endpoint.format(
+        response = await client.request(
+            method=UNFOLLOW_USER_HTTP_METHOD,
+            url=unfollow_user_endpoint.format(
                 id=USER_CAN_UNFOLLOW_USER["followed_user_id"]
             ),
             headers=USER_CAN_UNFOLLOW_USER["user_header"]
@@ -61,8 +68,9 @@ class TestUnfollowOtherUserEndpoint:
     async def test_that_user_can_not_unfollow_not_followed_user(
             client: AsyncClient,
             init_test_data_for_db: None) -> None:
-        response = await client.delete(
-            url=unfollow_other_user_endpoint.format(
+        response = await client.request(
+            method=UNFOLLOW_USER_HTTP_METHOD,
+            url=unfollow_user_endpoint.format(
                 id=USER_NOT_FOLLOWING_USER["followed_user_id"]
             ),
             headers=USER_NOT_FOLLOWING_USER["user_header"]
@@ -83,8 +91,9 @@ class TestUnfollowOtherUserEndpoint:
         total_followed_before = await User.get_total_followed_by_name(
             AUTHORIZED_HEADER["api-key"]
         )
-        response = await client.delete(
-            url=unfollow_other_user_endpoint.format(
+        response = await client.request(
+            method=UNFOLLOW_USER_HTTP_METHOD,
+            url=unfollow_user_endpoint.format(
                 id=USER_CAN_UNFOLLOW_USER["followed_user_id"]
             ),
             headers=USER_CAN_UNFOLLOW_USER["user_header"]

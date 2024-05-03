@@ -4,25 +4,12 @@ from typing import BinaryIO
 from aiofiles import open as aio_open, os as aio_os
 
 OK_STATUS_CODE = 200
-
 CREATED_STATUS_CODE = 201
-
 BAD_REQUEST_STATUS_CODE = 400
-
 UNAUTHORIZED_SATUS_CODE = 401
-
 FORBIDDEN_STATUS_CODE = 403
-
 NOT_FOUND_SATUS_CODE = 404
 METHOD_NOT_ALLOWED_SATUS_CODE = 405
-ADD_TWEET_ENDPOINT = "/api/tweets"
-ADD_MEDIA_ENDPOINT = "/api/medias"
-delete_tweet_endpoint = '/api/tweets/{id}'
-like_tweet_endpoint = '/api/tweets/{id}/likes'
-dislike_tweet_endpoint = '/api/tweets/{id}/likes'
-follow_other_user_endpoint = '/api/users/{id}/follow'
-unfollow_other_user_endpoint = '/api/users/{id}/follow'
-GET_TWEET_FEED = '/api/tweets'
 FAKE_TWITTER_ENDPOINTS = {
     "add_tweet": {"endpoint": "/api/tweets", "http_method": "POST"},
     "add_media": {"endpoint": "/api/medias", "http_method": "POST"},
