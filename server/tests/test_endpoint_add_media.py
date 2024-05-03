@@ -42,8 +42,7 @@ class TestAddMediaEndpoint:
     @staticmethod
     @pytest_mark.asyncio
     async def test_validation_handler_for_incorrect_request_form(
-            client: AsyncClient,
-            init_test_data_for_db: None) -> None:
+            client: AsyncClient) -> None:
         for i_data in INCORRECT_MEDIA_BODY_DATA:
             response = await client.post(
                 url=ADD_MEDIA_ENDPOINT,

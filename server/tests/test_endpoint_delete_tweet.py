@@ -37,8 +37,7 @@ class TestDeleteTweetEndpoint:
     @staticmethod
     @pytest_mark.asyncio
     async def test_validation_handler_for_incorrect_path_parameter(
-            client: AsyncClient,
-            init_test_data_for_db: None) -> None:
+            client: AsyncClient) -> None:
         for i_endpoint in INVALID_DELETE_TWEET_ENDPOINTS:
             response = await client.delete(
                 url=i_endpoint,

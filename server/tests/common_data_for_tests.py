@@ -18,6 +18,7 @@ METHOD_NOT_ALLOWED_SATUS_CODE = 405
 ADD_TWEET_ENDPOINT = "/api/tweets"
 ADD_MEDIA_ENDPOINT = "/api/medias"
 delete_tweet_endpoint = '/api/tweets/{id}'
+like_tweet_endpoint = '/api/tweets/{id}/likes'
 FAKE_TWITTER_ENDPOINTS = [
     ('/api/tweets', 'POST'),
     ('/api/medias', 'POST'),
@@ -35,15 +36,13 @@ ERROR_MESSAGE = {
     "error_type": "",
     "error_message": ""
 }
-AUTHORIZED_HEADER = {"api-key": "test_1"}
-
 FILE_DIR_PATH = os_path.dirname(__file__)
 DEFAULT_TEST_IMAGES_PATH = os_path.join(FILE_DIR_PATH, "test_images/default")
 SAVE_MEDIA_ABS_PATH = os_path.join(
     FILE_DIR_PATH, os_environ.get("SAVE_MEDIA_REL_PATH")
 )
-
 TEST_USER_1 = {"name": "test_1"}
+AUTHORIZED_HEADER = {"api-key": TEST_USER_1["name"]}
 TEST_USER_2 = {"name": "test_2"}
 TEST_USER_3 = {"name": "test_3"}
 FILE_NAME_1 = "image.png"

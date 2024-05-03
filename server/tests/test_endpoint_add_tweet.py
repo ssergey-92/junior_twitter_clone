@@ -30,8 +30,7 @@ class TestAddTweetEndpoint:
     @staticmethod
     @pytest_mark.asyncio
     async def test_validation_handler_for_incorrect_request_body(
-            client: AsyncClient,
-            init_test_data_for_db: None,) -> None:
+            client: AsyncClient) -> None:
         for i_data in INCORRECT_TWEET_BODY_DATA:
             response = await client.post(
                 url=ADD_TWEET_ENDPOINT,
