@@ -19,6 +19,7 @@ ADD_TWEET_ENDPOINT = "/api/tweets"
 ADD_MEDIA_ENDPOINT = "/api/medias"
 delete_tweet_endpoint = '/api/tweets/{id}'
 like_tweet_endpoint = '/api/tweets/{id}/likes'
+dislike_tweet_endpoint = '/api/tweets/{id}/likes'
 FAKE_TWITTER_ENDPOINTS = [
     ('/api/tweets', 'POST'),
     ('/api/medias', 'POST'),
