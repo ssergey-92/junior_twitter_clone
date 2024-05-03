@@ -1,8 +1,6 @@
 from os import path as os_path, environ as os_environ
 from typing import BinaryIO
 
-from aiofiles import open as aio_open, os as aio_os
-
 OK_STATUS_CODE = 200
 CREATED_STATUS_CODE = 201
 BAD_REQUEST_STATUS_CODE = 400
@@ -29,7 +27,7 @@ FAKE_TWITTER_ENDPOINTS = {
     },
     "get_tweet_feed": {"endpoint": "/api/tweets", "http_method": "GET"},
     "get_own_profile": {"endpoint": "/api/users/me", "http_method": "GET"},
-    "get_other_user_profile": {
+    "get_user_profile": {
         "endpoint": "/api/users/{id}", "http_method": "GET"
     }
 }
