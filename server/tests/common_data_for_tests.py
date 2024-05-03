@@ -22,18 +22,30 @@ like_tweet_endpoint = '/api/tweets/{id}/likes'
 dislike_tweet_endpoint = '/api/tweets/{id}/likes'
 follow_other_user_endpoint = '/api/users/{id}/follow'
 unfollow_other_user_endpoint = '/api/users/{id}/follow'
-FAKE_TWITTER_ENDPOINTS = [
-    ('/api/tweets', 'POST'),
-    ('/api/medias', 'POST'),
-    ('/api/tweets/{id}', 'DELETE'),
-    ('/api/tweets/{id}/likes', 'POST'),
-    ('/api/tweets/{id}/likes', 'DELETE'),
-    ('/api/users/{id}/follow', 'POST'),
-    ('/api/users/{id}/follow', 'DELETE'),
-    ('/api/tweets', 'GET'),
-    ('/api/users/me', 'GET'),
-    ('/api/users/{id}', 'GET')
-]
+GET_TWEET_FEED = '/api/tweets'
+FAKE_TWITTER_ENDPOINTS = {
+    "add_tweet": {"endpoint": "/api/tweets", "http_method": "POST"},
+    "add_media": {"endpoint": "/api/medias", "http_method": "POST"},
+    "delete_tweet": {"endpoint": "/api/tweets/{id}", "http_method": "DELETE"},
+    "like_tweet": {
+        "endpoint": "/api/tweets/{id}/likes",
+        "http_method": "POST"
+    },
+    "dislike_tweet": {
+        "endpoint": "/api/tweets/{id}/likes", "http_method": "DELETE"
+    },
+    "follow_user": {
+        "endpoint": "/api/users/{id}/follow", "http_method": "POST"}
+    ,
+    "unfollow_user": {
+        "endpoint": "/api/users/{id}/follow", "http_method": "DELETE"
+    },
+    "get_tweet_feed": {"endpoint": "/api/tweets", "http_method": "GET"},
+    "get_own_profile": {"endpoint": "/api/users/me", "http_method": "GET"},
+    "get_other_user_profile": {
+        "endpoint": "/api/users/{id}", "http_method": "GET"
+    }
+}
 ERROR_MESSAGE = {
     "result": False,
     "error_type": "",
@@ -55,7 +67,7 @@ MEDIA_FILE_NAME_FOR_RENAME = "image!@#.jpg"
 MEDIA_FILE_UNSUPPORTED_FORMAT = "image.txt"
 MEDIA_FILE_1 = {"file_name": FILE_NAME_1, "user_name": TEST_USER_1["name"]}
 MEDIA_FILE_2 = {"file_name": FILE_NAME_2, "user_name": TEST_USER_2["name"]}
-MEDIA_FILE_3 = {"file_name": FILE_NAME_3, "user_name":  TEST_USER_2["name"]}
+MEDIA_FILE_3 = {"file_name": FILE_NAME_3, "user_name": TEST_USER_2["name"]}
 TWEET_1 = {
     "author_name": TEST_USER_1["name"],
     "tweet_data": "tweet of test_1 user",
@@ -83,4 +95,3 @@ def open_test_image(file_name: str) -> BinaryIO:
         os_path.join(DEFAULT_TEST_IMAGES_PATH, file_name)
     )
     return open(abs_image_path, 'rb')
-

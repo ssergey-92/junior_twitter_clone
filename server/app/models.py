@@ -200,20 +200,20 @@ class HandleEndpoint:
             )
             return error_template_message, 400
 
-    @staticmethod
-    async def get_user_tweet_feed(api_key: str) -> tuple[dict, int]:
-        user = await User.get_user_by_name(api_key)
-        followed_users_name = list()
-        tweet_feed = list()
-        for i_followed in user.followed:
-            followed_users_name.append(i_followed.name)
-        if followed_users_name:
-            tweets = await Tweet.get_tweets_by_author_sorted_by_likes(
-                followed_users_name)
-            if tweets:
-                tweet_feed = await HandleEndpoint._create_tweet_feed(tweets)
-        response_message = {"result": True, "tweets": tweet_feed}
-        return response_message, 200
+    # @staticmethod
+    # async def get_user_tweet_feed(api_key: str) -> tuple[dict, int]:
+    #     user = await User.get_user_by_name(api_key)
+    #     followed_users_name = list()
+    #     tweet_feed = list()
+    #     for i_followed in user.followed:
+    #         followed_users_name.append(i_followed.name)
+    #     if followed_users_name:
+    #         tweets = await Tweet.get_tweets_by_author_sorted_by_likes(
+    #             followed_users_name)
+    #         if tweets:
+    #             tweet_feed = await HandleEndpoint._create_tweet_feed(tweets)
+    #     response_message = {"result": True, "tweets": tweet_feed}
+    #     return response_message, 200
 
     @staticmethod
     async def get_full_tweet_feed() -> tuple[dict, int]:

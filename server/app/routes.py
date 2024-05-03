@@ -254,7 +254,6 @@ async def get_fake_twitter_app() -> FastAPI:
         description="Tweet feed for user",
         responses={
             200: {"description": "OK", "model": TweetFeedOut},
-            400: {"description": "Bad Request", "model": ErrorResponse},
             401: {"description": "Unauthorized", "model": ErrorResponse}
         }
     )
@@ -268,10 +267,7 @@ async def get_fake_twitter_app() -> FastAPI:
 
         routes_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
-        if http_code == 200:
-            return TweetFeedOut(**data)
-        else:
-            return ErrorResponse(**data)
+        return TweetFeedOut(**data)
 
     @app.get(
         path="/api/users/me",
