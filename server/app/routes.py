@@ -274,7 +274,6 @@ async def get_fake_twitter_app() -> FastAPI:
         description="User own profile details",
         responses={
             200: {"description": "OK", "model": UserProfileDetailsOut},
-            400: {"description": "Bad Request", "model": ErrorResponse},
             401: {"description": "Unauthorized", "model": ErrorResponse}
         }
     )
@@ -285,10 +284,7 @@ async def get_fake_twitter_app() -> FastAPI:
         data, http_code = await HandleEndpoint.get_own_profile_details(api_key)
         routes_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
-        if http_code == 200:
-            return UserProfileDetailsOut(**data)
-        else:
-            return ErrorResponse(**data)
+        return UserProfileDetailsOut(**data)
 
     @app.get(
         path="/api/users/{id}",
