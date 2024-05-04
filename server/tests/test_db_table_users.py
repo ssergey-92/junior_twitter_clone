@@ -1,6 +1,4 @@
-from httpx import AsyncClient
 from pytest import mark as pytest_mark
-from typing import Callable
 
 from ..app.database import User
 from .common_data_for_tests import test_user_1, test_user_2, test_user_3

@@ -74,6 +74,7 @@ MEDIA_FILE_2 = {
 MEDIA_FILE_3 = {
     "file_name": FILE_NAME_3, "user_name": test_user_2["name"], "id": 3
 }
+DEFAULT_TOTAL_MEDIA_FILES = 3
 TWEET_1 = {
     "author_name": test_user_1["name"],
     "tweet_data": "tweet of test_1 user",

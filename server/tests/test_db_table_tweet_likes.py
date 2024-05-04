@@ -1,4 +1,3 @@
-from httpx import AsyncClient
 from pytest import mark as pytest_mark
 
 from ..app.database import TweetLike
