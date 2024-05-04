@@ -26,7 +26,7 @@ class TestTweetLikeMethods:
     async def test_like_tweet(init_test_data_for_db: None) -> None:
         for i_like_details in USER_DID_NOT_LIKE_TWEET:
             like_id = await TweetLike.like_tweet(**i_like_details)
-            assert like_id is not None
+            assert isinstance(like_id, int)
         for i_like_details in USER_HAS_LIKED_TWEET:
             like_id = await TweetLike.like_tweet(**i_like_details)
             assert like_id is None
@@ -39,7 +39,7 @@ class TestTweetLikeMethods:
             assert like_id is None
         for i_like_details in USER_HAS_LIKED_TWEET:
             like_id = await TweetLike.dislike_tweet(**i_like_details)
-            assert like_id is not None
+            assert isinstance(like_id, int)
 
     @staticmethod
     @pytest_mark.asyncio

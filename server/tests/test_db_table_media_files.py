@@ -36,7 +36,7 @@ class TestMediaFilesMethods:
     @pytest_mark.asyncio
     async def test_add_media_files(init_test_data_for_db: None) -> None:
         media_file_id = await MediaFile.add_media_file(**NEW_MEDIA_FILE)
-        assert media_file_id is not None
+        assert media_file_id == DEFAULT_TOTAL_MEDIA_FILES + 1
 
     @staticmethod
     @pytest_mark.asyncio

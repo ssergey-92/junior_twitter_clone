@@ -115,7 +115,8 @@ class TestTableUserMethods:
             result = await User.follow_other_user(
                 i_followed_details["user"], i_followed_details["followed"]
             )
-            assert result is not None
+            assert result == (i_followed_details["user"],
+                              i_followed_details["followed"])
         for i_followed_details in USER_CAN_NOT_FOLLOW_USER:
             result = await User.follow_other_user(
                 i_followed_details["user"], i_followed_details["followed"]
@@ -130,7 +131,8 @@ class TestTableUserMethods:
             result = await User.unfollow_user(
                 i_followed_details["user"], i_followed_details["followed"]
             )
-            assert result is not None
+            assert result == (i_followed_details["user"],
+                              i_followed_details["followed"])
         for i_followed_details in USER_CAN_NOT_UNFOLLOW_USER:
             result = await User.unfollow_user(
                 i_followed_details["user"], i_followed_details["followed"]
