@@ -41,38 +41,59 @@ DEFAULT_TEST_IMAGES_PATH = os_path.join(FILE_DIR_PATH, "test_images/default")
 SAVE_MEDIA_ABS_PATH = os_path.join(
     FILE_DIR_PATH, os_environ.get("SAVE_MEDIA_REL_PATH")
 )
-TEST_USER_1 = {"name": "test_1"}
-AUTHORIZED_HEADER = {"api-key": TEST_USER_1["name"]}
-TEST_USER_2 = {"name": "test_2"}
-TEST_USER_3 = {"name": "test_3"}
+test_user_1 = {"name": "test_1", "id": 1}
+test_user_2 = {"name": "test_2", "id": 2}
+test_user_3 = {"name": "test_3", "id": 3}
+test_user_1["followers"] = [
+    {"name": test_user_3["name"], "id": test_user_3["id"]}
+]
+test_user_2["followers"] = [
+    {"name": test_user_1["name"], "id": test_user_1["id"]}
+]
+test_user_3["followers"] = []
+test_user_1["followed"] = [
+    {"name": test_user_2["name"], "id": test_user_2["id"]}
+]
+test_user_2["followed"] = []
+test_user_3["followed"] =[
+    {"name": test_user_1["name"], "id": test_user_1["id"]}
+]
+AUTHORIZED_HEADER = {"api-key": test_user_1["name"]}
+
 FILE_NAME_1 = "image.png"
 FILE_NAME_2 = "image.jpg"
 FILE_NAME_3 = "image.jpeg"
 MEDIA_FILE_NAME_FOR_RENAME = "image!@#.jpg"
 MEDIA_FILE_UNSUPPORTED_FORMAT = "image.txt"
-MEDIA_FILE_1 = {"file_name": FILE_NAME_1, "user_name": TEST_USER_1["name"]}
-MEDIA_FILE_2 = {"file_name": FILE_NAME_2, "user_name": TEST_USER_2["name"]}
-MEDIA_FILE_3 = {"file_name": FILE_NAME_3, "user_name": TEST_USER_2["name"]}
+MEDIA_FILE_1 = {
+    "file_name": FILE_NAME_1, "user_name": test_user_1["name"]
+}
+MEDIA_FILE_2 = {
+    "file_name": FILE_NAME_2, "user_name": test_user_2["name"]
+}
+MEDIA_FILE_3 = {
+    "file_name": FILE_NAME_3, "user_name": test_user_2["name"]
+}
 TWEET_1 = {
-    "author_name": TEST_USER_1["name"],
+    "author_name": test_user_1["name"],
     "tweet_data": "tweet of test_1 user",
-    "tweet_media_ids": [1]
+    "tweet_media_ids": [1],
 }
 TWEET_2 = {
-    "author_name": TEST_USER_2["name"],
+    "author_name": test_user_2["name"],
     "tweet_data": "tweet of test_2 user",
-    "tweet_media_ids": [2, 3]
+    "tweet_media_ids": [2, 3],
 }
 TWEET_3 = {
-    "author_name": TEST_USER_3["name"],
+    "author_name": test_user_3["name"],
     "tweet_data": "tweet of test_3 user",
 }
-LIKE_1_1 = {"tweet_id": 1, "user_name": TEST_USER_1["name"]}
-LIKE_2_2 = {"tweet_id": 2, "user_name": TEST_USER_2["name"]}
-LIKE_2_3 = {"tweet_id": 2, "user_name": TEST_USER_3["name"]}
-LIKE_3_1 = {"tweet_id": 3, "user_name": TEST_USER_1["name"]}
-LIKE_3_2 = {"tweet_id": 3, "user_name": TEST_USER_2["name"]}
-LIKE_3_3 = {"tweet_id": 3, "user_name": TEST_USER_3["name"]}
+LIKE_1_1 = {"tweet_id": 1, "user_name": test_user_1["name"]}
+LIKE_2_2 = {"tweet_id": 2, "user_name": test_user_2["name"]}
+LIKE_2_3 = {"tweet_id": 2, "user_name": test_user_3["name"]}
+LIKE_3_1 = {"tweet_id": 3, "user_name": test_user_1["name"]}
+LIKE_3_2 = {"tweet_id": 3, "user_name": test_user_2["name"]}
+LIKE_3_3 = {"tweet_id": 3, "user_name": test_user_3["name"]}
 
 
 def open_test_image(file_name: str) -> BinaryIO:

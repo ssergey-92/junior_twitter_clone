@@ -11,7 +11,7 @@ from starlette.requests import Request as StarletteRequest
 
 from database import init_db, close_db_connection, User
 from models import HandleEndpoint
-from project_logger import get_stream_logger
+from project_logger import fake_twitter_logger
 from schemas import (
     AddTweetIn,
     AddTweetOut,
@@ -27,7 +27,7 @@ UNAUTHORIZED_MESSAGE = {
     "error_type": "Unauthorized",
     "error_message": "You don't have permission to visit website!"
 }
-routes_logger = get_stream_logger("routes_logger")
+# fake_twitter_logger = get_stream_logger("routes_logger")
 
 
 async def get_fake_twitter_app() -> FastAPI:
@@ -41,7 +41,7 @@ async def get_fake_twitter_app() -> FastAPI:
         :type app:FastAPI
         """
 
-        routes_logger.info("Started lifespan")
+        fake_twitter_logger.info("Started lifespan")
         await init_db()
         yield
         await close_db_connection()
@@ -51,13 +51,13 @@ async def get_fake_twitter_app() -> FastAPI:
     @app.middleware("http")
     async def intercept_request(request: Request, call_next):
         api_key = request.headers.get('api-key')
-        routes_logger.info(f"Checking permission for user: {api_key=}")
+        fake_twitter_logger.info(f"Checking permission for user: {api_key=}")
         if api_key and await User.is_existed_user_name(api_key):
-            routes_logger.info(f"Access granted!")
+            fake_twitter_logger.info(f"Access granted!")
             response = await call_next(request)
             return response
         else:
-            routes_logger.info(f"Access denied!")
+            fake_twitter_logger.info(f"Access denied!")
             return JSONResponse(
                 content=UNAUTHORIZED_MESSAGE,
                 status_code=401
@@ -67,7 +67,7 @@ async def get_fake_twitter_app() -> FastAPI:
     async def http_exception_handler(
             request: StarletteRequest,
             exc: StarletteHTTPException) -> JSONResponse:
-        routes_logger.info(f"Caught exception: {exc}")
+        fake_twitter_logger.info(f"Caught exception: {exc}")
         return JSONResponse(
             content=jsonable_encoder(
                 {
@@ -83,7 +83,7 @@ async def get_fake_twitter_app() -> FastAPI:
     async def validation_exception_handler(
             request: StarletteRequest,
             exc: RequestValidationError) -> JSONResponse:
-        routes_logger.info(f"Caught exception: {exc}")
+        fake_twitter_logger.info(f"Caught exception: {exc}")
         return JSONResponse(
             content=jsonable_encoder(
                 {
@@ -109,9 +109,9 @@ async def get_fake_twitter_app() -> FastAPI:
             api_key: Annotated[str, Header()],
             response: Response
     ) -> Union[AddTweetOut, ErrorResponse]:
-        routes_logger.info(f"{api_key=} | {new_tweet=}")
+        fake_twitter_logger.info(f"{api_key=} | {new_tweet=}")
         data, http_code = await HandleEndpoint.add_tweet(api_key, new_tweet)
-        routes_logger.info(f"{data=}, {http_code=}")
+        fake_twitter_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
         return AddTweetOut(**data)
 
@@ -129,9 +129,9 @@ async def get_fake_twitter_app() -> FastAPI:
             file: Annotated[UploadFile, Form()],
             api_key: Annotated[str, Header()],
             response: Response) -> Union[AddMediaOut, ErrorResponse]:
-        routes_logger.info(f"{api_key=}, {file.filename=}")
+        fake_twitter_logger.info(f"{api_key=}, {file.filename=}")
         data, http_code = await HandleEndpoint.add_media_file(api_key, file)
-        routes_logger.info(f"{data=}, {http_code=}")
+        fake_twitter_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
         if http_code == 201:
             return AddMediaOut(**data)
@@ -152,9 +152,9 @@ async def get_fake_twitter_app() -> FastAPI:
             id: int,
             api_key: Annotated[str, Header()],
             response: Response) -> Union[SuccessResponse, ErrorResponse]:
-        routes_logger.info(f"{api_key=} | {id=}")
+        fake_twitter_logger.info(f"{api_key=} | {id=}")
         data, http_code = await HandleEndpoint.delete_tweet(api_key, id)
-        routes_logger.info(f"{data=}, {http_code=}")
+        fake_twitter_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
         if http_code == 200:
             return SuccessResponse()
@@ -174,9 +174,9 @@ async def get_fake_twitter_app() -> FastAPI:
             id: int,
             api_key: Annotated[str, Header()],
             response: Response) -> Union[SuccessResponse, ErrorResponse]:
-        routes_logger.info(f"{api_key=} | {id=}")
+        fake_twitter_logger.info(f"{api_key=} | {id=}")
         data, http_code = await HandleEndpoint.like_tweet_by_id(api_key, id)
-        routes_logger.info(f"{data=}, {http_code=}")
+        fake_twitter_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
         if http_code == 201:
             return SuccessResponse()
@@ -196,9 +196,9 @@ async def get_fake_twitter_app() -> FastAPI:
             id: int,
             api_key: Annotated[str, Header()],
             response: Response) -> Union[SuccessResponse, ErrorResponse]:
-        routes_logger.info(f"{api_key=} | {id=}")
+        fake_twitter_logger.info(f"{api_key=} | {id=}")
         data, http_code = await HandleEndpoint.dislike_tweet_by_id(api_key, id)
-        routes_logger.info(f"{data=}, {http_code=}")
+        fake_twitter_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
         if http_code == 201:
             return SuccessResponse()
@@ -218,9 +218,9 @@ async def get_fake_twitter_app() -> FastAPI:
             id: int,
             api_key: Annotated[str, Header()],
             response: Response) -> Union[SuccessResponse, ErrorResponse]:
-        routes_logger.info(f"{api_key=} | {id=}")
+        fake_twitter_logger.info(f"{api_key=} | {id=}")
         data, http_code = await HandleEndpoint.follow_other_user(api_key, id)
-        routes_logger.info(f"{data=}, {http_code=}")
+        fake_twitter_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
         if http_code == 201:
             return SuccessResponse()
@@ -240,9 +240,9 @@ async def get_fake_twitter_app() -> FastAPI:
             id: int,
             api_key: Annotated[str, Header()],
             response: Response) -> Union[SuccessResponse, ErrorResponse]:
-        routes_logger.info(f"{api_key=} | {id=}")
+        fake_twitter_logger.info(f"{api_key=} | {id=}")
         data, http_code = await HandleEndpoint.unfollow_user(api_key, id)
-        routes_logger.info(f"{data=}, {http_code=}")
+        fake_twitter_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
         if http_code == 201:
             return SuccessResponse()
@@ -260,12 +260,12 @@ async def get_fake_twitter_app() -> FastAPI:
     async def get_tweet_feed(
             api_key: Annotated[str, Header()],
             response: Response) -> Union[TweetFeedOut, ErrorResponse]:
-        routes_logger.info(f"{api_key=}")
+        fake_twitter_logger.info(f"{api_key=}")
 
         # data, http_code = await HandleEndpoint.get_user_tweet_feed(api_key)
         data, http_code = await HandleEndpoint.get_full_tweet_feed()
 
-        routes_logger.info(f"{data=}, {http_code=}")
+        fake_twitter_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
         return TweetFeedOut(**data)
 
@@ -280,9 +280,9 @@ async def get_fake_twitter_app() -> FastAPI:
     async def get_own_profile_details(
             api_key: Annotated[str, Header()],
             response: Response) -> Union[UserProfileDetailsOut, ErrorResponse]:
-        routes_logger.info(f"{api_key=}")
+        fake_twitter_logger.info(f"{api_key=}")
         data, http_code = await HandleEndpoint.get_own_profile_details(api_key)
-        routes_logger.info(f"{data=}, {http_code=}")
+        fake_twitter_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
         return UserProfileDetailsOut(**data)
 
@@ -299,9 +299,9 @@ async def get_fake_twitter_app() -> FastAPI:
             id: int,
             api_key: Annotated[str, Header()],
             response: Response) -> Union[UserProfileDetailsOut, ErrorResponse]:
-        routes_logger.info(f"{api_key=}")
+        fake_twitter_logger.info(f"{api_key=}")
         data, http_code = await HandleEndpoint.get_user_profile_details(id)
-        routes_logger.info(f"{data=}, {http_code=}")
+        fake_twitter_logger.info(f"{data=}, {http_code=}")
         response.status_code = http_code
         if http_code == 200:
             return UserProfileDetailsOut(**data)

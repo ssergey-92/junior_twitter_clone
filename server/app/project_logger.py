@@ -14,3 +14,6 @@ def get_stream_logger(
     logger.addHandler(stream_handler)
     logger.setLevel(DEBUG)
     return logger
+
+
+fake_twitter_logger = get_stream_logger("fake_twitter")

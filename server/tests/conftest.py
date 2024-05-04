@@ -28,14 +28,14 @@ from .common_data_for_tests import (
     MEDIA_FILE_2,
     MEDIA_FILE_3,
     SAVE_MEDIA_ABS_PATH,
-    TEST_USER_1,
-    TEST_USER_2,
-    TEST_USER_3,
+    test_user_1,
+    test_user_2,
+    test_user_3,
     TWEET_1,
     TWEET_2,
     TWEET_3
 )
-from server.app.routes import get_fake_twitter_app
+from server.app.routes import get_fake_twitter_app, application
 
 
 # async def override_dependency_save_media_file_in_sys(
@@ -52,7 +52,7 @@ from server.app.routes import get_fake_twitter_app
 async def app() -> FastAPI:
     print('0000000000000000000000000000', 'creating app')
     os_environ["SAVE_MEDIA_PATH"] = SAVE_MEDIA_ABS_PATH
-    application = await get_fake_twitter_app()
+    # application = await get_fake_twitter_app()
     return application
 
 
@@ -82,8 +82,8 @@ async def client(app) -> AsyncClient:
     print(1111111111111111111111111111111111, 'client')
     async with AsyncClient(
             transport=ASGITransport(app=app),
-            base_url="http://test") as ac:
-        yield ac
+            base_url="http://test") as async_client:
+        yield async_client
 
 
 @async_fixture(scope="function")
@@ -103,15 +103,16 @@ async def recreate_all_tables() -> None:
 
 @async_fixture(autouse=True, scope="function")
 async def init_test_data_for_db(recreate_all_tables: None,
-                         test_session: AsyncSession) -> None:
+                                test_session: AsyncSession) -> None:
     print(444444444444444444444444444444444, 'init data')
-    test_1 = User(**TEST_USER_1)
-    test_2 = User(**TEST_USER_2)
-    test_3 = User(**TEST_USER_3)
+    test_1 = User(name=test_user_1["name"])
+    test_2 = User(name=test_user_2["name"])
+    test_3 = User(name=test_user_3["name"])
     test_1.followed.append(test_2)
     test_1.followers.append(test_3)
     test_session.add_all([test_1, test_2, test_3])
     await test_session.commit()
+
     test_session.add_all(
         [
             MediaFile(**MEDIA_FILE_1),
