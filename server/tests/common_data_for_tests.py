@@ -66,35 +66,38 @@ FILE_NAME_3 = "image.jpeg"
 MEDIA_FILE_NAME_FOR_RENAME = "image!@#.jpg"
 MEDIA_FILE_UNSUPPORTED_FORMAT = "image.txt"
 MEDIA_FILE_1 = {
-    "file_name": FILE_NAME_1, "user_name": test_user_1["name"]
+    "file_name": FILE_NAME_1, "user_name": test_user_1["name"], "id": 1
 }
 MEDIA_FILE_2 = {
-    "file_name": FILE_NAME_2, "user_name": test_user_2["name"]
+    "file_name": FILE_NAME_2, "user_name": test_user_2["name"], "id": 2
 }
 MEDIA_FILE_3 = {
-    "file_name": FILE_NAME_3, "user_name": test_user_2["name"]
+    "file_name": FILE_NAME_3, "user_name": test_user_2["name"], "id": 3
 }
 TWEET_1 = {
     "author_name": test_user_1["name"],
     "tweet_data": "tweet of test_1 user",
     "tweet_media_ids": [1],
+    "id": 1
 }
 TWEET_2 = {
     "author_name": test_user_2["name"],
     "tweet_data": "tweet of test_2 user",
     "tweet_media_ids": [2, 3],
+    "id": 2
 }
 TWEET_3 = {
     "author_name": test_user_3["name"],
     "tweet_data": "tweet of test_3 user",
+    "id": 3
 }
-LIKE_1_1 = {"tweet_id": 1, "user_name": test_user_1["name"]}
-LIKE_2_2 = {"tweet_id": 2, "user_name": test_user_2["name"]}
-LIKE_2_3 = {"tweet_id": 2, "user_name": test_user_3["name"]}
-LIKE_3_1 = {"tweet_id": 3, "user_name": test_user_1["name"]}
-LIKE_3_2 = {"tweet_id": 3, "user_name": test_user_2["name"]}
-LIKE_3_3 = {"tweet_id": 3, "user_name": test_user_3["name"]}
-
+LIKE_1_1 = {"tweet_id": 1, "user_name": test_user_1["name"], "id": 1}
+LIKE_2_2 = {"tweet_id": 2, "user_name": test_user_2["name"], "id": 2}
+LIKE_2_3 = {"tweet_id": 2, "user_name": test_user_3["name"], "id": 3}
+LIKE_3_1 = {"tweet_id": 3, "user_name": test_user_1["name"], "id": 4}
+LIKE_3_2 = {"tweet_id": 3, "user_name": test_user_2["name"], "id": 5}
+LIKE_3_3 = {"tweet_id": 3, "user_name": test_user_3["name"], "id": 6}
+DEFAULT_TOTAL_LIKES = 6
 
 def open_test_image(file_name: str) -> BinaryIO:
     abs_image_path = os_path.abspath(

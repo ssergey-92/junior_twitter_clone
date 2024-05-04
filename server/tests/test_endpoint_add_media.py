@@ -132,12 +132,12 @@ class TestAddMediaEndpoint:
             client: AsyncClient,
             init_test_data_for_db: None,
             init_test_folders: None) -> None:
-        before_total_media = await MediaFile.get_total_media_file()
+        before_total_media = await MediaFile.get_total_media_files()
         await client.request(
             method=ADD_MEDIA_HTTP_METHOD,
             url=ADD_MEDIA_ENDPOINT,
             headers=AUTHORIZED_HEADER,
             files=CORRECT_MEDIA_BODY_DATA_AND_RESPONSE[0][0]
         )
-        after_total_media = await MediaFile.get_total_media_file()
+        after_total_media = await MediaFile.get_total_media_files()
         assert before_total_media + 1 == after_total_media

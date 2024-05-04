@@ -110,7 +110,7 @@ class TestDeleteTweetEndpoint:
             init_midia_file_for_test: None) -> None:
 
         total_tweets_before = await Tweet.get_total_tweets()
-        total_media_before = await MediaFile.get_total_media_file()
+        total_media_before = await MediaFile.get_total_media_files()
         total_likes_before = await TweetLike.get_total_likes()
         await client.request(
                 method=DELETE_TWEET_HTTP_METHOD,
@@ -118,7 +118,7 @@ class TestDeleteTweetEndpoint:
                 headers=VALID_DELETE_TWEET_ENDPOINTS_AND_HEADER[1][1]
             )
         total_tweets_after = await Tweet.get_total_tweets()
-        total_media_after = await MediaFile.get_total_media_file()
+        total_media_after = await MediaFile.get_total_media_files()
         total_likes_after = await TweetLike.get_total_likes()
 
         assert total_tweets_before - 1 == total_tweets_after

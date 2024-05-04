@@ -291,7 +291,7 @@ class MediaFile(Base):
         return media_file_id
 
     @classmethod
-    async def get_total_media_file(cls) -> int:
+    async def get_total_media_files(cls) -> int:
         fake_twitter_logger.info(
             f"Get total media files from table '{cls.__tablename__}'"
         )

@@ -94,7 +94,7 @@ class TestTableUserMethods:
 
     @staticmethod
     @pytest_mark.asyncio
-    async def test_add_user(init_test_data_for_db: None) -> None:
+    async def test_add_user(recreate_all_tables: None) -> None:
         await User.add_user(NEW_USER["name"])
         assert (await User.is_existed_user_name(NEW_USER["name"]) is
                 True)

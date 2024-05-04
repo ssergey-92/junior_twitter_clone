@@ -115,23 +115,56 @@ async def init_test_data_for_db(recreate_all_tables: None,
 
     test_session.add_all(
         [
-            MediaFile(**MEDIA_FILE_1),
-            MediaFile(**MEDIA_FILE_2),
-            MediaFile(**MEDIA_FILE_3),
-            Tweet(**TWEET_1),
-            Tweet(**TWEET_2),
-            Tweet(**TWEET_3),
+            MediaFile(
+                file_name=MEDIA_FILE_1["file_name"],
+                user_name=MEDIA_FILE_1["user_name"]
+            ),
+            MediaFile(
+                file_name=MEDIA_FILE_2["file_name"],
+                user_name=MEDIA_FILE_2["user_name"]
+            ),
+            MediaFile(
+                file_name=MEDIA_FILE_3["file_name"],
+                user_name=MEDIA_FILE_3["user_name"]
+            ),
+            Tweet(
+                author_name=TWEET_1["author_name"],
+                tweet_data=TWEET_1["tweet_data"],
+                tweet_media_ids=TWEET_1.get("tweet_media_ids", None)
+            ),
+            Tweet(
+                author_name=TWEET_2["author_name"],
+                tweet_data=TWEET_2["tweet_data"],
+                tweet_media_ids=TWEET_2.get("tweet_media_ids", None)
+            ),
+            Tweet(
+                author_name=TWEET_3["author_name"],
+                tweet_data=TWEET_3["tweet_data"],
+                tweet_media_ids=TWEET_3.get("tweet_media_ids", None)
+            )
         ]
     )
     await test_session.commit()
     test_session.add_all(
         [
-            TweetLike(**LIKE_1_1),
-            TweetLike(**LIKE_2_2),
-            TweetLike(**LIKE_2_3),
-            TweetLike(**LIKE_3_1),
-            TweetLike(**LIKE_3_2),
-            TweetLike(**LIKE_3_3),
+            TweetLike(
+                tweet_id=LIKE_1_1["tweet_id"], user_name=LIKE_1_1["user_name"]
+            ),
+            TweetLike(
+                tweet_id=LIKE_2_2["tweet_id"], user_name=LIKE_2_2["user_name"]
+            ),
+            TweetLike(
+                tweet_id=LIKE_2_3["tweet_id"], user_name=LIKE_2_3["user_name"]
+            ),
+            TweetLike(
+                tweet_id=LIKE_3_1["tweet_id"], user_name=LIKE_3_1["user_name"]
+            ),
+            TweetLike(
+                tweet_id=LIKE_3_2["tweet_id"], user_name=LIKE_3_2["user_name"]
+            ),
+            TweetLike(
+                tweet_id=LIKE_3_3["tweet_id"], user_name=LIKE_3_3["user_name"]
+            )
         ]
     )
     await test_session.commit()
