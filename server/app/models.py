@@ -12,15 +12,15 @@ from schemas import AddTweetIn
 
 
 ALLOWED_IMAGE_EXTENSIONS = ("png", "jpg", "jpeg")
+FORBIDDEN_MESSAGE = {
+    "result": False,
+    "error_type": "Forbidden",
+    "error_message": "You don't have permission for such operation!"
+}
 error_template_message = {
     "result": False,
     "error_type": "",
     "error_message": ""
-}
-forbidden_message = {
-    "result": False,
-    "error_type": "Forbidden",
-    "error_message": "You don't have permission for such operation!"
 }
 
 
@@ -171,7 +171,7 @@ class HandleEndpoint:
                 )
             return None, 200
         else:
-            forbidden_message["error_message"] = \
+            FORBIDDEN_MESSAGE["error_message"] = \
                 "You can delete only yours tweet which is posted!"
             return error_template_message, 403
 

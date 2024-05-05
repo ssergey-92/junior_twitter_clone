@@ -77,7 +77,7 @@ async def app_routes(app) -> list:
 #     yield api_routes
 
 
-@async_fixture(autouse=True, scope="session")
+@async_fixture(scope="session")
 async def client(app) -> AsyncClient:
     print(1111111111111111111111111111111111, 'client')
     async with AsyncClient(
@@ -101,7 +101,7 @@ async def recreate_all_tables() -> None:
         await conn.run_sync(Base.metadata.create_all)
 
 
-@async_fixture(autouse=True, scope="function")
+@async_fixture(scope="function")
 async def init_test_data_for_db(recreate_all_tables: None,
                                 test_session: AsyncSession) -> None:
     print(444444444444444444444444444444444, 'init data')

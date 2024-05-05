@@ -55,7 +55,7 @@ test_user_1["followed"] = [
     {"name": test_user_2["name"], "id": test_user_2["id"]}
 ]
 test_user_2["followed"] = []
-test_user_3["followed"] =[
+test_user_3["followed"] = [
     {"name": test_user_1["name"], "id": test_user_1["id"]}
 ]
 AUTHORIZED_HEADER = {"api-key": test_user_1["name"]}
@@ -100,6 +100,36 @@ LIKE_3_1 = {"tweet_id": 3, "user_name": test_user_1["name"], "id": 4}
 LIKE_3_2 = {"tweet_id": 3, "user_name": test_user_2["name"], "id": 5}
 LIKE_3_3 = {"tweet_id": 3, "user_name": test_user_3["name"], "id": 6}
 DEFAULT_TOTAL_LIKES = 6
+SORTED_TWEET_FEED = [
+    {
+        "id": TWEET_3["id"],
+        "content": TWEET_3["tweet_data"],
+        "attachments": [],
+        "author": {"id": test_user_3["id"], "name": TWEET_3["author_name"]},
+        "likes": [
+            {"user_id": test_user_1["id"], "name": test_user_1["name"]},
+            {"user_id": test_user_2["id"], "name": test_user_2["name"]},
+            {"user_id": test_user_3["id"], "name": test_user_3["name"]}
+        ]
+    },
+    {
+        "id": TWEET_2["id"],
+        "content": TWEET_2["tweet_data"],
+        "attachments": [FILE_NAME_2, FILE_NAME_3],
+        "author": {"id": test_user_2["id"], "name": TWEET_2["author_name"]},
+        "likes": [
+            {"user_id": test_user_2["id"], "name": test_user_2["name"]},
+            {"user_id": test_user_3["id"], "name": test_user_3["name"]}
+        ]
+    },
+    {
+        "id": TWEET_1["id"],
+        "content": TWEET_1["tweet_data"],
+        "attachments": [FILE_NAME_1],
+        "author": {'id': test_user_1["id"], 'name': TWEET_1["author_name"]},
+        "likes": [{"user_id": test_user_1["id"], "name": test_user_1["name"]}]
+    }
+]
 
 
 def open_test_image(file_name: str) -> BinaryIO:

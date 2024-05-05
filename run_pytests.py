@@ -10,7 +10,8 @@ if __name__ == "__main__":
     subprocess_run(
         args="timeout 15s docker exec test_postgresql sh -c 'pg_isready' && "
              # "pytest server/tests -v ;"
-             "pytest --cov=server/app server/tests -v ; "
+             # "pytest --cov=server/app server/tests -v ; "
+             "pytest --cov-report term-missing --cov=server/app server/tests -v ;"
              "cd server/tests && "
              "docker compose stop && "
              "docker compose rm",
