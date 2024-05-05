@@ -360,7 +360,7 @@ class Tweet(Base):
             cls,
             author_name: str,
             tweet_data: str,
-            tweet_media_ids: list[int] = None) -> int:
+            tweet_media_ids: list[int] = None) -> Optional[int]:
         fake_twitter_logger.info(
             f"Adding {tweet_data=}, {tweet_media_ids=}, {author_name=}"
             f"in table '{cls.__tablename__}'"
@@ -375,7 +375,7 @@ class Tweet(Base):
                         tweet_media_ids=tweet_media_ids)
                     .returning(cls.id)
                 )
-                tweet_id = add_query.scalar()
+                tweet_id = add_query.scalar_one_or_none()
         fake_twitter_logger.info(f"Added {tweet_id=}")
         return tweet_id
 
@@ -408,30 +408,30 @@ class Tweet(Base):
         fake_twitter_logger.info(f"{total_tweets=}")
         return total_tweets
 
-    @classmethod
-    async def get_tweets_by_author_sorted_by_likes(cls, followed_names: list) \
-            -> list[Optional[Tweet]]:
-        fake_twitter_logger.info(
-            f"Get tweets for {followed_names=} and sort them descending "
-            f"by likes from table '{cls.__tablename__}'"
-        )
-        async with async_session() as session:
-            select_query = await session.execute(
-                select(cls)
-                .where(cls.author_name.in_(followed_names))
-                .outerjoin(TweetLike, cls.id == TweetLike.tweet_id)
-                .order_by(desc(func.count(TweetLike.id)))
-                .group_by(cls.id)
-                .options(
-                    joinedload(cls.author),
-                    joinedload(cls.likes)
-                    .options(joinedload(TweetLike.user_details)
-                             )
-                )
-            )
-            user_tweets = select_query.unique().scalars().all()
-        fake_twitter_logger.info(f"{user_tweets=}")
-        return list(user_tweets)
+    # @classmethod
+    # async def get_tweets_by_author_sorted_by_likes(cls, followed_names: list) \
+    #         -> list[Optional[Tweet]]:
+    #     fake_twitter_logger.info(
+    #         f"Get tweets for {followed_names=} and sort them descending "
+    #         f"by likes from table '{cls.__tablename__}'"
+    #     )
+    #     async with async_session() as session:
+    #         select_query = await session.execute(
+    #             select(cls)
+    #             .where(cls.author_name.in_(followed_names))
+    #             .outerjoin(TweetLike, cls.id == TweetLike.tweet_id)
+    #             .order_by(desc(func.count(TweetLike.id)))
+    #             .group_by(cls.id)
+    #             .options(
+    #                 joinedload(cls.author),
+    #                 joinedload(cls.likes)
+    #                 .options(joinedload(TweetLike.user_details)
+    #                          )
+    #             )
+    #         )
+    #         user_tweets = select_query.unique().scalars().all()
+    #     fake_twitter_logger.info(f"{user_tweets=}")
+    #     return list(user_tweets)
 
     @classmethod
     async def get_all_tweets_sorted_by_likes(cls) -> list[Optional[Tweet]]:

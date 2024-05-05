@@ -31,6 +31,7 @@ USER_CAN_NOT_UNFOLLOW_USER = [
     {"user": test_user_2["id"], "followed": test_user_3["id"]},
     {"user": test_user_3["id"], "followed": test_user_2["id"]}
 ]
+
 class TestTableUserMethods:
 
     @staticmethod

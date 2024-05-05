@@ -92,6 +92,7 @@ TWEET_3 = {
     "tweet_data": "tweet of test_3 user",
     "id": 3
 }
+DEFAULT_TOTAL_TWEETS = 3
 LIKE_1_1 = {"tweet_id": 1, "user_name": test_user_1["name"], "id": 1}
 LIKE_2_2 = {"tweet_id": 2, "user_name": test_user_2["name"], "id": 2}
 LIKE_2_3 = {"tweet_id": 2, "user_name": test_user_3["name"], "id": 3}
@@ -99,6 +100,7 @@ LIKE_3_1 = {"tweet_id": 3, "user_name": test_user_1["name"], "id": 4}
 LIKE_3_2 = {"tweet_id": 3, "user_name": test_user_2["name"], "id": 5}
 LIKE_3_3 = {"tweet_id": 3, "user_name": test_user_3["name"], "id": 6}
 DEFAULT_TOTAL_LIKES = 6
+
 
 def open_test_image(file_name: str) -> BinaryIO:
     abs_image_path = os_path.abspath(
