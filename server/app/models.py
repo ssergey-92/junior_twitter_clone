@@ -12,12 +12,7 @@ from schemas import AddTweetIn
 
 
 ALLOWED_IMAGE_EXTENSIONS = ("png", "jpg", "jpeg")
-FORBIDDEN_MESSAGE = {
-    "result": False,
-    "error_type": "Forbidden",
-    "error_message": "You don't have permission for such operation!"
-}
-error_template_message = {
+ERROR_MESSAGE = {
     "result": False,
     "error_type": "",
     "error_message": ""
@@ -53,12 +48,12 @@ class HandleEndpoint:
                 split_file_name[-1] in ALLOWED_IMAGE_EXTENSIONS):
             return None
         else:
-            error_template_message["error_type"] = "Bad Request"
-            error_template_message["error_message"] = (
+            ERROR_MESSAGE["error_type"] = "Bad Request"
+            ERROR_MESSAGE["error_message"] = (
                 f"Support only filename formats: "
                 f"{ALLOWED_IMAGE_EXTENSIONS}!"
             )
-            return error_template_message, 400
+            return ERROR_MESSAGE, 400
 
     @staticmethod
     def _make_safe_file_name(file_name: str) -> str:
@@ -171,9 +166,10 @@ class HandleEndpoint:
                 )
             return None, 200
         else:
-            FORBIDDEN_MESSAGE["error_message"] = \
+            ERROR_MESSAGE["error_type"] = "Forbidden"
+            ERROR_MESSAGE["error_message"] = \
                 "You can delete only yours tweet which is posted!"
-            return error_template_message, 403
+            return ERROR_MESSAGE, 403
 
     @staticmethod
     async def dislike_tweet_by_id(api_key: str, tweet_id: int) \
@@ -182,10 +178,10 @@ class HandleEndpoint:
         if tweet_like_id:
             return None, 201
         else:
-            error_template_message["error_type"] = "Bad Request"
-            error_template_message[
+            ERROR_MESSAGE["error_type"] = "Bad Request"
+            ERROR_MESSAGE[
                 "error_message"] = "You did not like the tweet!"
-            return error_template_message, 400
+            return ERROR_MESSAGE, 400
 
     @staticmethod
     async def like_tweet_by_id(api_key: str, tweet_id: int) \
@@ -194,11 +190,11 @@ class HandleEndpoint:
         if tweet_like_id:
             return None, 201
         else:
-            error_template_message["error_type"] = "Bad Request"
-            error_template_message["error_message"] = (
+            ERROR_MESSAGE["error_type"] = "Bad Request"
+            ERROR_MESSAGE["error_message"] = (
                 "You have already liked the tweet!"
             )
-            return error_template_message, 400
+            return ERROR_MESSAGE, 400
 
     # @staticmethod
     # async def get_user_tweet_feed(api_key: str) -> tuple[dict, int]:
@@ -234,11 +230,11 @@ class HandleEndpoint:
             response_message = {"result": True, "user": user_profile}
             return response_message, 200
         else:
-            error_template_message["error_type"] = "Bad Request"
-            error_template_message["error_message"] = (
+            ERROR_MESSAGE["error_type"] = "Bad Request"
+            ERROR_MESSAGE["error_message"] = (
                 f"There is no user with id: {user_id} in db."
             )
-            return error_template_message, 400
+            return ERROR_MESSAGE, 400
 
     @staticmethod
     async def get_own_profile_details(api_key: str) -> tuple[dict, int]:
@@ -255,11 +251,11 @@ class HandleEndpoint:
         if follow_details:
             return None, 201
         else:
-            error_template_message["error_type"] = "Bad Request"
-            error_template_message["error_message"] = (
+            ERROR_MESSAGE["error_type"] = "Bad Request"
+            ERROR_MESSAGE["error_message"] = (
                    f"You have already followed this user!"
             )
-            return error_template_message, 400
+            return ERROR_MESSAGE, 400
 
     @staticmethod
     async def unfollow_user(api_key: str, followed_id: int) \
@@ -269,8 +265,8 @@ class HandleEndpoint:
         if unfollow_details:
             return None, 201
         else:
-            error_template_message["error_type"] = "Bad Request"
-            error_template_message["error_message"] = (
+            ERROR_MESSAGE["error_type"] = "Bad Request"
+            ERROR_MESSAGE["error_message"] = (
                 f"You are not following this user!"
             )
-            return error_template_message, 400
+            return ERROR_MESSAGE, 400

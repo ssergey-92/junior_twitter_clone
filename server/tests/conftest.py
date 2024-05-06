@@ -47,11 +47,15 @@ from server.app.routes import get_fake_twitter_app, application
 # application.dependency_overrides[HandleEndpoint._save_media_file_in_sys] \
 #         = override_dependency_save_media_file_in_sys
 
+@async_fixture(scope="session")
+async def add_media_path_to_environ() -> None:
+    print('------11111111111111', 'add_data_to_environ')
+    os_environ["SAVE_MEDIA_PATH"] = SAVE_MEDIA_ABS_PATH
+
 
 @async_fixture(scope="session")
-async def app() -> FastAPI:
+async def app(add_media_path_to_environ) -> FastAPI:
     print('0000000000000000000000000000', 'creating app')
-    os_environ["SAVE_MEDIA_PATH"] = SAVE_MEDIA_ABS_PATH
     # application = await get_fake_twitter_app()
     return application
 

@@ -58,6 +58,16 @@ test_user_2["followed"] = []
 test_user_3["followed"] = [
     {"name": test_user_1["name"], "id": test_user_1["id"]}
 ]
+test_user_profile = test_user_1.copy()
+test_user_profile["following"] = test_user_profile.pop("followed")
+CORRECT_GET_USER_PROFILE_RESPONSE = {
+    "user_profile": {"result": True, "user": test_user_profile},
+    "http_status_code": OK_STATUS_CODE
+}
+CORRECT_GET_OWN_PROFILE_RESPONSE = {
+    "own_profile": {"result": True, "user": test_user_profile},
+    "http_status_code": OK_STATUS_CODE
+}
 AUTHORIZED_HEADER = {"api-key": test_user_1["name"]}
 
 FILE_NAME_1 = "image.png"
@@ -130,6 +140,11 @@ SORTED_TWEET_FEED = [
         "likes": [{"user_id": test_user_1["id"], "name": test_user_1["name"]}]
     }
 ]
+CORRECT_GET_TWEET_FEED_RESPONSE = {
+    "tweet_feed": {"result": True, "tweets": SORTED_TWEET_FEED},
+    "http_status_code": OK_STATUS_CODE
+}
+
 
 
 def open_test_image(file_name: str) -> BinaryIO:
