@@ -1,6 +1,13 @@
 from os import path as os_path, environ as os_environ
 from typing import BinaryIO
 
+DEFAULT_TABLE_NAMES = [
+    'users',
+    'followers',
+    'media_files',
+    'tweets',
+    'tweets_likes'
+]
 OK_STATUS_CODE = 200
 CREATED_STATUS_CODE = 201
 BAD_REQUEST_STATUS_CODE = 400
@@ -142,6 +149,10 @@ SORTED_TWEET_FEED = [
 ]
 CORRECT_GET_TWEET_FEED_RESPONSE = {
     "tweet_feed": {"result": True, "tweets": SORTED_TWEET_FEED},
+    "http_status_code": OK_STATUS_CODE
+}
+CORRECT_GET_TWEET_FEED_RESPONSE_2 = {
+    "tweet_feed": {"result": True, "tweets": list()},
     "http_status_code": OK_STATUS_CODE
 }
 

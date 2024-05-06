@@ -104,10 +104,10 @@ async def recreate_all_tables() -> None:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-
 @async_fixture(scope="function")
-async def init_test_data_for_db(recreate_all_tables: None,
-                                test_session: AsyncSession) -> None:
+async def init_test_data_for_db(
+        recreate_all_tables: None,
+        test_session: AsyncSession) -> None:
     print(444444444444444444444444444444444, 'init data')
     test_1 = User(name=test_user_1["name"])
     test_2 = User(name=test_user_2["name"])

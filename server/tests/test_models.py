@@ -9,6 +9,7 @@ from .common_data_for_tests import (
     BAD_REQUEST_STATUS_CODE,
     CREATED_STATUS_CODE,
     CORRECT_GET_TWEET_FEED_RESPONSE,
+    CORRECT_GET_TWEET_FEED_RESPONSE_2,
     CORRECT_GET_USER_PROFILE_RESPONSE,
     CORRECT_GET_OWN_PROFILE_RESPONSE,
     ERROR_MESSAGE,
@@ -301,6 +302,16 @@ class TestHandleEndpoint:
         assert tweet_feed == CORRECT_GET_TWEET_FEED_RESPONSE["tweet_feed"]
         assert (http_status_code ==
                 CORRECT_GET_TWEET_FEED_RESPONSE["http_status_code"])
+
+    @staticmethod
+    @pytest_mark.asyncio
+    async def test_get_full_tweet_feed_from_empty_tables(
+            recreate_all_tables: None) -> None:
+        tweet_feed, http_status_code = \
+            await HandleEndpoint.get_full_tweet_feed()
+        assert tweet_feed == CORRECT_GET_TWEET_FEED_RESPONSE_2["tweet_feed"]
+        assert (http_status_code ==
+                CORRECT_GET_TWEET_FEED_RESPONSE_2["http_status_code"])
 
     @staticmethod
     @pytest_mark.asyncio

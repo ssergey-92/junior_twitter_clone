@@ -461,8 +461,8 @@ async def create_tables() -> None:
     """Create tables in db"""
 
     async with async_engine.begin() as conn:
-        fake_twitter_logger.info("Dropping all table in db")
-        await conn.run_sync(Base.metadata.drop_all)
+        # fake_twitter_logger.info("Dropping all table in db")
+        # await conn.run_sync(Base.metadata.drop_all)
 
         fake_twitter_logger.info("Creating tables which are not existed in db.")
         await conn.run_sync(Base.metadata.create_all)
