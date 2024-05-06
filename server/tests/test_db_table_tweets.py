@@ -3,16 +3,16 @@ from pytest import mark as pytest_mark
 from ..app.database import Tweet
 from .common_data_for_tests import (
     DEFAULT_TOTAL_TWEETS,
-    test_user_1,
     TWEET_1,
     TWEET_2,
-    TWEET_3
+    TWEET_3,
+    test_user_1,
 )
 
 NEW_TWEET = {
     "author_name": test_user_1["name"],
     "tweet_data": "new tweet for teat user_1",
-    "tweet_media_ids": [4, 5]
+    "tweet_media_ids": [4, 5],
 }
 
 
@@ -28,11 +28,12 @@ class TestTableTweetMethods:
     @pytest_mark.asyncio
     async def test_delete_tweet(init_test_data_for_db: None) -> None:
         deleted_details = await Tweet.delete_tweet(
-            author_name=TWEET_1["author_name"],
-            tweet_id=TWEET_1["id"]
+            author_name=TWEET_1["author_name"], tweet_id=TWEET_1["id"]
         )
-        assert (deleted_details ==
-                (TWEET_1["tweet_data"], TWEET_1["tweet_media_ids"]))
+        assert deleted_details == (
+            TWEET_1["tweet_data"],
+            TWEET_1["tweet_media_ids"],
+        )
 
     @staticmethod
     @pytest_mark.asyncio
@@ -43,7 +44,8 @@ class TestTableTweetMethods:
     @staticmethod
     @pytest_mark.asyncio
     async def test_get_all_tweets_sorted_by_likes(
-            init_test_data_for_db: None) -> None:
+        init_test_data_for_db: None,
+    ) -> None:
         all_tweets = await Tweet.get_all_tweets_sorted_by_likes()
         assert len(all_tweets) == DEFAULT_TOTAL_TWEETS
         for i_tweet in all_tweets:

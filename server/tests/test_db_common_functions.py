@@ -1,19 +1,18 @@
 from os import environ as os_environ
 
 from pytest import mark as pytest_mark
-from sqlalchemy.sql import text
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import (func, select)
+from sqlalchemy.sql import text
+
 from ..app.database import (
-    async_engine,
-    close_db_connection,
-    get_async_engine,
-    followers,
-    User,
-    init_db,
     MediaFile,
     Tweet,
-    TweetLike
+    TweetLike,
+    User,
+    followers,
+    get_async_engine,
+    init_db,
 )
 from .common_data_for_tests import DEFAULT_TABLE_NAMES
 
@@ -36,14 +35,13 @@ async def test_create_tables(test_session: AsyncSession):
 
 
 @pytest_mark.asyncio
-async def test_init_db(
-        recreate_all_tables,
-        test_session: AsyncSession):
+async def test_init_db(recreate_all_tables, test_session: AsyncSession):
     await init_db()
     total_users = await test_session.execute(select(func.count(User.id)))
     assert total_users.scalar() == 5
-    total_media_files = \
-        await test_session.execute(select(func.count(MediaFile.id)))
+    total_media_files = await test_session.execute(
+        select(func.count(MediaFile.id))
+    )
     assert total_media_files.scalar() == 5
     total_tweets = await test_session.execute(select(func.count(Tweet.id)))
     assert total_tweets.scalar() == 5
@@ -53,4 +51,3 @@ async def test_init_db(
         select(func.count(followers.c.follower_id))
     )
     assert total_followers.scalar() == 7
-

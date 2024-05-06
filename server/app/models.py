@@ -1,22 +1,18 @@
 from datetime import datetime
-from os import path as os_path, environ as os_environ
+from os import environ as os_environ
+from os import path as os_path
 from random import randint
 from re import findall
 from typing import Optional
 
-from aiofiles import open as aio_open, os as aio_os
+from aiofiles import open as aio_open
+from aiofiles import os as aio_os
+from database import MediaFile, Tweet, TweetLike, User
 from fastapi import UploadFile
-
-from database import User, MediaFile, Tweet, TweetLike
 from schemas import AddTweetIn
 
-
 ALLOWED_IMAGE_EXTENSIONS = ("png", "jpg", "jpeg")
-ERROR_MESSAGE = {
-    "result": False,
-    "error_type": "",
-    "error_message": ""
-}
+ERROR_MESSAGE = {"result": False, "error_type": "", "error_message": ""}
 
 
 class HandleEndpoint:
@@ -41,11 +37,11 @@ class HandleEndpoint:
         return user_profile
 
     @staticmethod
-    def _check_media_file_extension(file_name: str) \
-            -> Optional[tuple[dict, int]]:
-        split_file_name = file_name.rsplit('.')
-        if (split_file_name and
-                split_file_name[-1] in ALLOWED_IMAGE_EXTENSIONS):
+    def _check_media_file_extension(
+        file_name: str,
+    ) -> Optional[tuple[dict, int]]:
+        split_file_name = file_name.rsplit(".")
+        if split_file_name and split_file_name[-1] in ALLOWED_IMAGE_EXTENSIONS:
             return None
         else:
             ERROR_MESSAGE["error_type"] = "Bad Request"
@@ -57,17 +53,16 @@ class HandleEndpoint:
 
     @staticmethod
     def _make_safe_file_name(file_name: str) -> str:
-        split_file_name = file_name.rsplit('.')
-        if (len(split_file_name) == 2 and
-                findall(r"^[\w_]+$", split_file_name[0])):
+        split_file_name = file_name.rsplit(".")
+        if len(split_file_name) == 2 and findall(
+            r"^[\w_]+$", split_file_name[0]
+        ):
             return file_name
         else:
             safe_filename = "{name}.{format}".format(
-                name=randint(1, 1000),
-                format=split_file_name[-1]
+                name=randint(1, 1000), format=split_file_name[-1]
             )
             return safe_filename
-
 
     @staticmethod
     async def _create_tweet_feed(tweets: list[Tweet]) -> list:
@@ -83,9 +78,11 @@ class HandleEndpoint:
                 "id": i_tweet.id,
                 "content": i_tweet.tweet_data,
                 "attachments": attachments,
-                "author":
-                    {"id": i_tweet.author.id, "name": i_tweet.author.name},
-                "likes": list()
+                "author": {
+                    "id": i_tweet.author.id,
+                    "name": i_tweet.author.name,
+                },
+                "likes": list(),
             }
             for i_like in i_tweet.likes:
                 like_details = {
@@ -98,55 +95,54 @@ class HandleEndpoint:
 
     @staticmethod
     async def _delete_files_from_sys(
-            media_files_names: list,
-            images_dir_path: str) -> None:
+        media_files_names: list, images_dir_path: str
+    ) -> None:
         for i_media_file in media_files_names:
             await aio_os.remove(os_path.join(images_dir_path, i_media_file))
 
     @staticmethod
     async def _delete_media_files(api_key: str, files_ids: list) -> None:
         deleted_file_names_from_db = await MediaFile.bulk_delete(
-            user_name=api_key,
-            files_ids=files_ids
+            user_name=api_key, files_ids=files_ids
         )
         images_dir_path = os_environ.get("SAVE_MEDIA_PATH")
         await HandleEndpoint._delete_files_from_sys(
-            deleted_file_names_from_db,
-            images_dir_path
+            deleted_file_names_from_db, images_dir_path
         )
 
     @staticmethod
     async def _save_media_file_in_sys(
-            media_file: UploadFile,
-            unique_filename: str) -> None:
+        media_file: UploadFile, unique_filename: str
+    ) -> None:
         images_dir_path = os_environ.get("SAVE_MEDIA_PATH")
         media_file_path = os_path.join(images_dir_path, unique_filename)
-        async with aio_open(media_file_path, 'wb') as out_file:
+        async with aio_open(media_file_path, "wb") as out_file:
             media_file_data = await media_file.read()
             await out_file.write(media_file_data)
 
     @staticmethod
-    async def add_tweet(api_key: str, new_tweet: AddTweetIn) \
-            -> tuple[dict, int]:
+    async def add_tweet(
+        api_key: str, new_tweet: AddTweetIn
+    ) -> tuple[dict, int]:
         new_tweet_details = dict(new_tweet)
         tweet_id = await Tweet.add_tweet(
-            **new_tweet_details,
-            author_name=api_key
+            **new_tweet_details, author_name=api_key
         )
         return {"tweet_id": tweet_id}, 201
 
     @staticmethod
-    async def add_media_file(api_key: str, file: UploadFile) \
-            -> tuple[dict, int]:
+    async def add_media_file(
+        api_key: str, file: UploadFile
+    ) -> tuple[dict, int]:
         filename = file.filename
         error_extension_message = HandleEndpoint._check_media_file_extension(
             filename
         )
         if not error_extension_message:
             safe_filename = HandleEndpoint._make_safe_file_name(filename)
-            unique_filename = '{datetime}_{name}'.format(
-                datetime=datetime.now().strftime('%d%b%y%H%M%S'),
-                name=safe_filename
+            unique_filename = "{datetime}_{name}".format(
+                datetime=datetime.now().strftime("%d%b%y%H%M%S"),
+                name=safe_filename,
             )
             await HandleEndpoint._save_media_file_in_sys(file, unique_filename)
             media_id = await MediaFile.add_media_file(api_key, unique_filename)
@@ -155,37 +151,39 @@ class HandleEndpoint:
             return error_extension_message
 
     @staticmethod
-    async def delete_tweet(api_key: str, tweet_id: int) \
-            -> tuple[Optional[dict], int]:
+    async def delete_tweet(
+        api_key: str, tweet_id: int
+    ) -> tuple[Optional[dict], int]:
         deleted_details = await Tweet.delete_tweet(api_key, tweet_id)
         if deleted_details:
             if len(deleted_details) == 2 and deleted_details[1]:
                 await HandleEndpoint._delete_media_files(
-                    api_key,
-                    deleted_details[1]
+                    api_key, deleted_details[1]
                 )
             return None, 200
         else:
             ERROR_MESSAGE["error_type"] = "Forbidden"
-            ERROR_MESSAGE["error_message"] = \
+            ERROR_MESSAGE["error_message"] = (
                 "You can delete only yours tweet which is posted!"
+            )
             return ERROR_MESSAGE, 403
 
     @staticmethod
-    async def dislike_tweet_by_id(api_key: str, tweet_id: int) \
-            -> tuple[Optional[dict], int]:
+    async def dislike_tweet_by_id(
+        api_key: str, tweet_id: int
+    ) -> tuple[Optional[dict], int]:
         tweet_like_id = await TweetLike.dislike_tweet(api_key, tweet_id)
         if tweet_like_id:
             return None, 201
         else:
             ERROR_MESSAGE["error_type"] = "Bad Request"
-            ERROR_MESSAGE[
-                "error_message"] = "You did not like the tweet!"
+            ERROR_MESSAGE["error_message"] = "You did not like the tweet!"
             return ERROR_MESSAGE, 400
 
     @staticmethod
-    async def like_tweet_by_id(api_key: str, tweet_id: int) \
-            -> tuple[Optional[dict], int]:
+    async def like_tweet_by_id(
+        api_key: str, tweet_id: int
+    ) -> tuple[Optional[dict], int]:
         tweet_like_id = await TweetLike.like_tweet(api_key, tweet_id)
         if tweet_like_id:
             return None, 201
@@ -222,8 +220,7 @@ class HandleEndpoint:
         return response_message, 200
 
     @staticmethod
-    async def get_user_profile_details(user_id: int) \
-            -> tuple[dict, int]:
+    async def get_user_profile_details(user_id: int) -> tuple[dict, int]:
         user = await User.get_user_by_id(user_id)
         if user:
             user_profile = HandleEndpoint._create_user_profile(user)
@@ -244,8 +241,9 @@ class HandleEndpoint:
         return response_message, 200
 
     @staticmethod
-    async def follow_other_user(api_key: str, followed_id: int) \
-            -> tuple[Optional[dict], int]:
+    async def follow_other_user(
+        api_key: str, followed_id: int
+    ) -> tuple[Optional[dict], int]:
         own_id = await User.get_user_id_by_name(api_key)
         follow_details = await User.follow_other_user(own_id, followed_id)
         if follow_details:
@@ -253,13 +251,14 @@ class HandleEndpoint:
         else:
             ERROR_MESSAGE["error_type"] = "Bad Request"
             ERROR_MESSAGE["error_message"] = (
-                   f"You have already followed this user!"
+                f"You have already followed this user!"
             )
             return ERROR_MESSAGE, 400
 
     @staticmethod
-    async def unfollow_user(api_key: str, followed_id: int) \
-            -> tuple[Optional[dict], int]:
+    async def unfollow_user(
+        api_key: str, followed_id: int
+    ) -> tuple[Optional[dict], int]:
         own_id = await User.get_user_id_by_name(api_key)
         unfollow_details = await User.unfollow_user(own_id, followed_id)
         if unfollow_details:

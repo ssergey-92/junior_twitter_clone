@@ -1,12 +1,13 @@
-from os import path as os_path, environ as os_environ
+from os import environ as os_environ
+from os import path as os_path
 from typing import BinaryIO
 
 DEFAULT_TABLE_NAMES = [
-    'users',
-    'followers',
-    'media_files',
-    'tweets',
-    'tweets_likes'
+    "users",
+    "followers",
+    "media_files",
+    "tweets",
+    "tweets_likes",
 ]
 OK_STATUS_CODE = 200
 CREATED_STATUS_CODE = 201
@@ -21,28 +22,25 @@ FAKE_TWITTER_ENDPOINTS = {
     "delete_tweet": {"endpoint": "/api/tweets/{id}", "http_method": "DELETE"},
     "like_tweet": {
         "endpoint": "/api/tweets/{id}/likes",
-        "http_method": "POST"
+        "http_method": "POST",
     },
     "dislike_tweet": {
-        "endpoint": "/api/tweets/{id}/likes", "http_method": "DELETE"
+        "endpoint": "/api/tweets/{id}/likes",
+        "http_method": "DELETE",
     },
     "follow_user": {
-        "endpoint": "/api/users/{id}/follow", "http_method": "POST"}
-    ,
+        "endpoint": "/api/users/{id}/follow",
+        "http_method": "POST",
+    },
     "unfollow_user": {
-        "endpoint": "/api/users/{id}/follow", "http_method": "DELETE"
+        "endpoint": "/api/users/{id}/follow",
+        "http_method": "DELETE",
     },
     "get_tweet_feed": {"endpoint": "/api/tweets", "http_method": "GET"},
     "get_own_profile": {"endpoint": "/api/users/me", "http_method": "GET"},
-    "get_user_profile": {
-        "endpoint": "/api/users/{id}", "http_method": "GET"
-    }
+    "get_user_profile": {"endpoint": "/api/users/{id}", "http_method": "GET"},
 }
-ERROR_MESSAGE = {
-    "result": False,
-    "error_type": "",
-    "error_message": ""
-}
+ERROR_MESSAGE = {"result": False, "error_type": "", "error_message": ""}
 FILE_DIR_PATH = os_path.dirname(__file__)
 DEFAULT_TEST_IMAGES_PATH = os_path.join(FILE_DIR_PATH, "test_images/default")
 SAVE_MEDIA_ABS_PATH = os_path.join(
@@ -69,11 +67,11 @@ test_user_profile = test_user_1.copy()
 test_user_profile["following"] = test_user_profile.pop("followed")
 CORRECT_GET_USER_PROFILE_RESPONSE = {
     "user_profile": {"result": True, "user": test_user_profile},
-    "http_status_code": OK_STATUS_CODE
+    "http_status_code": OK_STATUS_CODE,
 }
 CORRECT_GET_OWN_PROFILE_RESPONSE = {
     "own_profile": {"result": True, "user": test_user_profile},
-    "http_status_code": OK_STATUS_CODE
+    "http_status_code": OK_STATUS_CODE,
 }
 AUTHORIZED_HEADER = {"api-key": test_user_1["name"]}
 
@@ -83,31 +81,37 @@ FILE_NAME_3 = "image.jpeg"
 MEDIA_FILE_NAME_FOR_RENAME = "image!@#.jpg"
 MEDIA_FILE_UNSUPPORTED_FORMAT = "image.txt"
 MEDIA_FILE_1 = {
-    "file_name": FILE_NAME_1, "user_name": test_user_1["name"], "id": 1
+    "file_name": FILE_NAME_1,
+    "user_name": test_user_1["name"],
+    "id": 1,
 }
 MEDIA_FILE_2 = {
-    "file_name": FILE_NAME_2, "user_name": test_user_2["name"], "id": 2
+    "file_name": FILE_NAME_2,
+    "user_name": test_user_2["name"],
+    "id": 2,
 }
 MEDIA_FILE_3 = {
-    "file_name": FILE_NAME_3, "user_name": test_user_2["name"], "id": 3
+    "file_name": FILE_NAME_3,
+    "user_name": test_user_2["name"],
+    "id": 3,
 }
 DEFAULT_TOTAL_MEDIA_FILES = 3
 TWEET_1 = {
     "author_name": test_user_1["name"],
     "tweet_data": "tweet of test_1 user",
     "tweet_media_ids": [1],
-    "id": 1
+    "id": 1,
 }
 TWEET_2 = {
     "author_name": test_user_2["name"],
     "tweet_data": "tweet of test_2 user",
     "tweet_media_ids": [2, 3],
-    "id": 2
+    "id": 2,
 }
 TWEET_3 = {
     "author_name": test_user_3["name"],
     "tweet_data": "tweet of test_3 user",
-    "id": 3
+    "id": 3,
 }
 DEFAULT_TOTAL_TWEETS = 3
 LIKE_1_1 = {"tweet_id": 1, "user_name": test_user_1["name"], "id": 1}
@@ -126,8 +130,8 @@ SORTED_TWEET_FEED = [
         "likes": [
             {"user_id": test_user_1["id"], "name": test_user_1["name"]},
             {"user_id": test_user_2["id"], "name": test_user_2["name"]},
-            {"user_id": test_user_3["id"], "name": test_user_3["name"]}
-        ]
+            {"user_id": test_user_3["id"], "name": test_user_3["name"]},
+        ],
     },
     {
         "id": TWEET_2["id"],
@@ -136,30 +140,29 @@ SORTED_TWEET_FEED = [
         "author": {"id": test_user_2["id"], "name": TWEET_2["author_name"]},
         "likes": [
             {"user_id": test_user_2["id"], "name": test_user_2["name"]},
-            {"user_id": test_user_3["id"], "name": test_user_3["name"]}
-        ]
+            {"user_id": test_user_3["id"], "name": test_user_3["name"]},
+        ],
     },
     {
         "id": TWEET_1["id"],
         "content": TWEET_1["tweet_data"],
         "attachments": [FILE_NAME_1],
-        "author": {'id': test_user_1["id"], 'name': TWEET_1["author_name"]},
-        "likes": [{"user_id": test_user_1["id"], "name": test_user_1["name"]}]
-    }
+        "author": {"id": test_user_1["id"], "name": TWEET_1["author_name"]},
+        "likes": [{"user_id": test_user_1["id"], "name": test_user_1["name"]}],
+    },
 ]
 CORRECT_GET_TWEET_FEED_RESPONSE = {
     "tweet_feed": {"result": True, "tweets": SORTED_TWEET_FEED},
-    "http_status_code": OK_STATUS_CODE
+    "http_status_code": OK_STATUS_CODE,
 }
 CORRECT_GET_TWEET_FEED_RESPONSE_2 = {
     "tweet_feed": {"result": True, "tweets": list()},
-    "http_status_code": OK_STATUS_CODE
+    "http_status_code": OK_STATUS_CODE,
 }
-
 
 
 def open_test_image(file_name: str) -> BinaryIO:
     abs_image_path = os_path.abspath(
         os_path.join(DEFAULT_TEST_IMAGES_PATH, file_name)
     )
-    return open(abs_image_path, 'rb')
+    return open(abs_image_path, "rb")

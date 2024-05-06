@@ -1,4 +1,4 @@
-from logging import DEBUG, Formatter, getLogger, Logger, StreamHandler
+from logging import DEBUG, Formatter, Logger, StreamHandler, getLogger
 
 
 def get_stream_logger(

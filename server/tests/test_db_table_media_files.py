@@ -10,23 +10,24 @@ from .common_data_for_tests import (
 )
 
 NEW_MEDIA_FILE = {
-    "file_name": "new_image.jpg", "user_name": test_user_1["name"]
+    "file_name": "new_image.jpg",
+    "user_name": test_user_1["name"],
 }
 MEDIA_FILES = {
     "ids": [MEDIA_FILE_1["id"], MEDIA_FILE_2["id"], MEDIA_FILE_3["id"]],
     "corresponding_files_names": [
         MEDIA_FILE_1["file_name"],
         MEDIA_FILE_2["file_name"],
-        MEDIA_FILE_3["file_name"]
-    ]
+        MEDIA_FILE_3["file_name"],
+    ],
 }
 MEDIA_FILES_TO_DELETE = {
     "ids": [MEDIA_FILE_2["id"], MEDIA_FILE_3["id"]],
     "corresponding_files_names": [
         MEDIA_FILE_2["file_name"],
-        MEDIA_FILE_3["file_name"]
+        MEDIA_FILE_3["file_name"],
     ],
-    "belongs_to_user": MEDIA_FILE_2["user_name"]
+    "belongs_to_user": MEDIA_FILE_2["user_name"],
 }
 
 
@@ -57,9 +58,9 @@ class TestMediaFilesMethods:
     async def test_bulk_delete(init_test_data_for_db: None) -> None:
         deleted_media_files_names = await MediaFile.bulk_delete(
             MEDIA_FILES_TO_DELETE["belongs_to_user"],
-            MEDIA_FILES_TO_DELETE["ids"]
+            MEDIA_FILES_TO_DELETE["ids"],
         )
-        assert (deleted_media_files_names ==
-                MEDIA_FILES_TO_DELETE["corresponding_files_names"])
-
-
+        assert (
+            deleted_media_files_names
+            == MEDIA_FILES_TO_DELETE["corresponding_files_names"]
+        )

@@ -5,18 +5,18 @@ from .common_data_for_tests import (
     DEFAULT_TOTAL_LIKES,
     test_user_1,
     test_user_2,
-    test_user_3
+    test_user_3,
 )
 
 USER_DID_NOT_LIKE_TWEET = [
     {"tweet_id": 1, "user_name": test_user_2["name"]},
     {"tweet_id": 1, "user_name": test_user_3["name"]},
-    {"tweet_id": 2, "user_name": test_user_1["name"]}
+    {"tweet_id": 2, "user_name": test_user_1["name"]},
 ]
 USER_HAS_LIKED_TWEET = [
     {"tweet_id": 1, "user_name": test_user_1["name"]},
     {"tweet_id": 2, "user_name": test_user_3["name"]},
-    {"tweet_id": 3, "user_name": test_user_2["name"]}
+    {"tweet_id": 3, "user_name": test_user_2["name"]},
 ]
 
 
@@ -46,4 +46,3 @@ class TestTweetLikeMethods:
     async def test_get_total_likes(init_test_data_for_db: None) -> None:
         total_likes = await TweetLike.get_total_likes()
         assert total_likes == DEFAULT_TOTAL_LIKES
-
