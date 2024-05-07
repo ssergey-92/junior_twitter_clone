@@ -3,7 +3,6 @@ from __future__ import annotations
 from os import environ as os_environ
 from typing import List, Optional
 
-from project_logger import fake_twitter_logger
 from sqlalchemy import (
     ARRAY,
     Column,
@@ -18,7 +17,11 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.dialects.postgresql import Insert as PostgresqlInsert
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    async_sessionmaker,
+    create_async_engine
+)
 from sqlalchemy.orm import (
     Mapped,
     backref,
@@ -29,6 +32,8 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.pool import NullPool
 
+from project_logger import fake_twitter_logger
+
 # fake_twitter_logger = get_stream_logger("db_logger")
 DATABASE_URL = os_environ.get("DATABASE_URL")
 fake_twitter_logger.info(f"{DATABASE_URL=}")
@@ -36,7 +41,7 @@ fake_twitter_logger.info(f"{DATABASE_URL=}")
 # DATABASE_URL = "postgresql+asyncpg://admin:admin@db:5432/fake_twitter"
 
 
-def get_async_engine():
+def get_async_engine() -> AsyncEngine:
     if os_environ.get("PYTEST_ASYNC_ENGINE", None):
         fake_twitter_logger.info(f"Creating async engine for pytest")
         return create_async_engine(DATABASE_URL, poolclass=NullPool)
@@ -97,7 +102,7 @@ class User(Base):
         return True if user_id else False
 
     @classmethod
-    async def get_user_id_by_name(cls, user_name: str) -> int:
+    async def get_user_id_by_name(cls, user_name: str) -> Optional[int]:
         fake_twitter_logger.info(
             f"Get user id by {user_name=} from table '{cls.__tablename__}'"
         )
@@ -105,7 +110,7 @@ class User(Base):
             user_query = await session.execute(
                 select(User.id).where(User.name == user_name)
             )
-            user_id = user_query.scalar()
+            user_id = user_query.scalar_one_or_none()
         fake_twitter_logger.info(f"{user_name=}: {user_id=}")
         return user_id
 
@@ -275,7 +280,7 @@ class TweetLike(Base):
         return tweet_like_id
 
     @classmethod
-    async def get_total_likes(cls) -> int:
+    async def get_total_likes(cls) -> Optional[int]:
         fake_twitter_logger.info(
             f"Get total likes from table '{cls.__tablename__}'"
         )

@@ -2,11 +2,14 @@ from asyncio import run as async_run
 from contextlib import asynccontextmanager
 from typing import Annotated, Union
 
-from database import User, close_db_connection, init_db
 from fastapi import FastAPI, Form, Header, Request, Response, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.requests import Request as StarletteRequest
+
+from database import User, close_db_connection, init_db
 from models import HandleEndpoint
 from project_logger import fake_twitter_logger
 from schemas import (
@@ -18,8 +21,6 @@ from schemas import (
     TweetFeedOut,
     UserProfileDetailsOut,
 )
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from starlette.requests import Request as StarletteRequest
 
 UNAUTHORIZED_MESSAGE = {
     "result": False,
