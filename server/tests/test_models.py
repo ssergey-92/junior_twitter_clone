@@ -136,17 +136,16 @@ class TestHandleEndpoint:
     @staticmethod
     def test_check_media_file_extension() -> None:
         for i_media_file in ALLOWED_MEDIA_FILES:
-            result = HandleEndpoint._check_media_file_extension(i_media_file)
-            assert result is None
-        for i_media_file in WRONG_MEDIA_FILE_EXTENSIONS:
-            message, http_status_code = (
-                HandleEndpoint._check_media_file_extension(i_media_file)
+            result = HandleEndpoint._is_supported_media_file_extension(
+                i_media_file,
             )
-            assert http_status_code == BAD_REQUEST_STATUS_CODE
-            assert message.get("result", None) == ERROR_MESSAGE["result"]
-            assert message.keys() == ERROR_MESSAGE.keys()
-            assert isinstance(message.get("error_type", None), str)
-            assert isinstance(message.get("error_message", None), str)
+            assert result is True
+        for i_media_file in WRONG_MEDIA_FILE_EXTENSIONS:
+            result = HandleEndpoint._is_supported_media_file_extension(
+                i_media_file,
+            )
+            assert result is False
+
 
     @staticmethod
     def test_make_safe_file_name() -> None:
@@ -169,12 +168,12 @@ class TestHandleEndpoint:
     @staticmethod
     @pytest_mark.asyncio
     async def test_delete_files_from_sys(
-        init_test_data_for_db: None, init_midia_file_for_test: None
+        add_media_path_to_environ: None,
+        init_test_data_for_db: None,
+        init_midia_file_for_test: None,
     ) -> None:
         before_total_images = len(os_listdir(SAVE_MEDIA_ABS_PATH))
-        await HandleEndpoint._delete_files_from_sys(
-            [FILE_NAME_1, FILE_NAME_2], SAVE_MEDIA_ABS_PATH
-        )
+        await HandleEndpoint._delete_files_from_sys([FILE_NAME_1, FILE_NAME_2])
         after_total_images = len(os_listdir(SAVE_MEDIA_ABS_PATH))
         assert before_total_images - 2 == after_total_images
 
@@ -228,12 +227,12 @@ class TestHandleEndpoint:
     ) -> None:
         result = await HandleEndpoint.add_media_file(
             api_key=CORRECT_NEW_MEDIA_FILES_DATA["api_key"],
-            file=CORRECT_NEW_MEDIA_FILES_DATA["file"],
+            media_file=CORRECT_NEW_MEDIA_FILES_DATA["file"],
         )
         assert result == CORRECT_NEW_MEDIA_FILES_DATA["result"]
         result = await HandleEndpoint.add_media_file(
             api_key=INCORRECT_NEW_MEDIA_FILES_DATA["api_key"],
-            file=INCORRECT_NEW_MEDIA_FILES_DATA["file"],
+            media_file=INCORRECT_NEW_MEDIA_FILES_DATA["file"],
         )
         assert (
             result[0].keys()

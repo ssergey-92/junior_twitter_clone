@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from os import environ as os_environ
-from typing import List, Optional
+from sys import exit as sys_exit
+from typing import List, Optional, Union
 
 from sqlalchemy import (
     ARRAY,
@@ -17,6 +18,7 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.dialects.postgresql import Insert as PostgresqlInsert
+from sqlalchemy.engine import Row
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     async_sessionmaker,
@@ -31,6 +33,8 @@ from sqlalchemy.orm import (
     relationship,
 )
 from sqlalchemy.pool import NullPool
+from sqlalchemy.schema import Table as schema_table
+from typing_extensions import Never
 
 from project_logger import fake_twitter_logger
 
@@ -42,7 +46,9 @@ fake_twitter_logger.info(f"{DATABASE_URL=}")
 
 
 def get_async_engine() -> AsyncEngine:
-    if os_environ.get("PYTEST_ASYNC_ENGINE", None):
+    if not DATABASE_URL:
+        sys_exit("DATABASE_URL should be set to run the program!")
+    elif os_environ.get("PYTEST_ASYNC_ENGINE", None):
         fake_twitter_logger.info(f"Creating async engine for pytest")
         return create_async_engine(DATABASE_URL, poolclass=NullPool)
     else:
@@ -164,7 +170,7 @@ class User(Base):
     @staticmethod
     async def follow_other_user(
         follower_id: int, followed_id: int
-    ) -> Optional[tuple]:
+    ) -> Optional[Row]:
         fake_twitter_logger.info(
             f"Add {follower_id=} follow {followed_id=} in table "
             f"'{followers.name}'"
@@ -187,7 +193,7 @@ class User(Base):
     @staticmethod
     async def unfollow_user(
         follower_id: int, followed_id: int
-    ) -> Optional[tuple]:
+    ) -> Optional[Row]:
         fake_twitter_logger.info(
             f"Delete {follower_id=} follow {followed_id=} in table "
             f"'{followers.name}'"
@@ -209,15 +215,19 @@ class User(Base):
         return delete_details
 
     @classmethod
-    async def get_total_followed_by_name(cls, user_name: str) -> int:
+    async def get_total_followed_by_name(cls, user_name: str) -> Optional[int]:
         fake_twitter_logger.info(
             f"Get total followed users by name {user_name=} "
             f"from table '{cls.__tablename__}'"
         )
         user = await cls.get_user_by_name(user_name)
-        total_followed = len(user.followed)
-        fake_twitter_logger.info(f"{total_followed=}")
-        return total_followed
+        if user:
+            total_followed = len(user.followed)
+            fake_twitter_logger.info(f"{total_followed=}")
+            return total_followed
+        else:
+            fake_twitter_logger.info(f"{user_name=} is not existed in db")
+            return None
 
 
 class TweetLike(Base):
@@ -301,7 +311,9 @@ class MediaFile(Base):
     )
 
     @classmethod
-    async def add_media_file(cls, user_name: str, file_name: str) -> int:
+    async def add_media_file(
+            cls, user_name: str, file_name: str
+    ) -> Optional[int]:
         fake_twitter_logger.info(
             f"Adding {file_name=}, {user_name=} in table '{cls.__tablename__}'"
         )
@@ -312,33 +324,33 @@ class MediaFile(Base):
                     .values(user_name=user_name, file_name=file_name)
                     .returning(cls.id)
                 )
-                media_file_id = add_query.scalar()
+                media_file_id = add_query.scalar_one_or_none()
         fake_twitter_logger.info(f"Added {media_file_id=}")
         return media_file_id
 
     @classmethod
-    async def get_total_media_files(cls) -> int:
+    async def get_total_media_files(cls) -> Optional[int]:
         fake_twitter_logger.info(
             f"Get total media files from table '{cls.__tablename__}'"
         )
         async with async_session() as session:
             get_query = await session.execute(select(func.count(cls.id)))
-            total_media_files = get_query.scalar()
+            total_media_files = get_query.scalar_one_or_none()
         fake_twitter_logger.info(f"{total_media_files=}")
         return total_media_files
 
     @classmethod
     async def get_media_files_names(
-        cls, ids_list: list
-    ) -> list[Optional[str]]:
+        cls, ids_list: Union[list, Column]
+    ) -> list:
         fake_twitter_logger.info(f"Get media file names for {ids_list=}")
         async with async_session() as session:
             select_query = await session.execute(
                 select(cls.file_name).where(cls.id.in_(ids_list))
             )
-            file_names = select_query.scalars().all()
+            file_names = list(select_query.scalars().all())
         fake_twitter_logger.info(f"{file_names=}")
-        return list(file_names)
+        return file_names
 
     @classmethod
     async def bulk_delete(
@@ -369,12 +381,12 @@ class Tweet(Base):
     )
     tweet_data: Mapped[str] = mapped_column(nullable=False)
     tweet_media_ids = Column(ARRAY(Integer))
-    author: Mapped[List[User]] = relationship(
+    author = relationship(
         "User",
         primaryjoin="Tweet.author_name == User.name",
         lazy="joined",
     )
-    likes: Mapped[List[TweetLike]] = relationship(
+    likes = relationship(
         "TweetLike",
         primaryjoin="Tweet.id == TweetLike.tweet_id",
         lazy="joined",
@@ -385,7 +397,7 @@ class Tweet(Base):
         cls,
         author_name: str,
         tweet_data: str,
-        tweet_media_ids: list[int] = None,
+        tweet_media_ids: Optional[list[int]] = None,
     ) -> Optional[int]:
         fake_twitter_logger.info(
             f"Adding {tweet_data=}, {tweet_media_ids=}, {author_name=}"
@@ -409,7 +421,7 @@ class Tweet(Base):
     @classmethod
     async def delete_tweet(
         cls, author_name: str, tweet_id: int
-    ) -> Optional[tuple[str, Optional[list[int]]]]:
+    ) -> Optional[Row]:
         fake_twitter_logger.info(
             f"Deleting {tweet_id=} by {author_name=} from table "
             f"'{cls.__tablename__}'"
@@ -426,13 +438,13 @@ class Tweet(Base):
         return deleted_details
 
     @classmethod
-    async def get_total_tweets(cls) -> int:
+    async def get_total_tweets(cls) -> Optional[int]:
         fake_twitter_logger.info(
             f"Get total tweets from table '{cls.__tablename__}'"
         )
         async with async_session() as session:
             select_query = await session.execute(select(func.count(cls.id)))
-            total_tweets = select_query.scalar()
+            total_tweets = select_query.scalar_one_or_none()
         fake_twitter_logger.info(f"{total_tweets=}")
         return total_tweets
 
@@ -462,10 +474,11 @@ class Tweet(Base):
     #     return list(user_tweets)
 
     @classmethod
-    async def get_all_tweets_sorted_by_likes(cls) -> list[Optional[Tweet]]:
+    async def get_all_tweets_sorted_by_likes(cls) -> list[Tweet]:
         fake_twitter_logger.info(
             f"Get all tweets sorted descending by likes"
             f" from table '{cls.__tablename__}'"
+
         )
         async with async_session() as session:
             select_query = await session.execute(
