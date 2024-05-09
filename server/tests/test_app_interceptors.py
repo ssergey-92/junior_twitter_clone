@@ -1,8 +1,11 @@
 from httpx import AsyncClient
 from pytest import mark as pytest_mark
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import text
 
 from .common_data_for_tests import (
     AUTHORIZED_HEADER,
+    DEFAULT_TABLE_NAMES,
     ERROR_MESSAGE,
     FAKE_TWITTER_ENDPOINTS,
     UNAUTHORIZED_SATUS_CODE,
@@ -41,7 +44,7 @@ class TestAppInterceptors:
     @staticmethod
     @pytest_mark.asyncio
     async def test_intercept_request_unauthorized(
-        client: AsyncClient, init_test_data_for_db: None
+        client: AsyncClient, init_test_data_for_db: None,
     ) -> None:
         for i_data in UNAUTHORIZED_HEADERS:
             for i_url in TEST_ROUTES_FOR_INTERCEPT_REQUESTS:
@@ -65,7 +68,7 @@ class TestAppInterceptors:
     @staticmethod
     @pytest_mark.asyncio
     async def test_http_exception_handler(
-        client: AsyncClient, init_test_data_for_db: None
+        client: AsyncClient, init_test_data_for_db: None,
     ) -> None:
 
         # work after passing authorization
@@ -82,4 +85,17 @@ class TestAppInterceptors:
             assert isinstance(response_data.get("error_type", None), str)
             assert isinstance(response_data.get("error_message", None), str)
 
-    # validation exception handler is tested per each endpoint independently
+    @staticmethod
+    @pytest_mark.asyncio
+    async def test_lifespan(
+            app: None, test_session: AsyncSession,
+    ) -> None:
+        table_names_query = await test_session.execute(
+            text(
+                "SELECT tablename FROM pg_tables WHERE schemaname = 'public';"
+            ),
+        )
+        table_names = table_names_query.scalars().fetchall()
+        assert table_names == DEFAULT_TABLE_NAMES
+
+

@@ -116,6 +116,11 @@ class TestTableUserMethods:
                 i_exist_user["name"]
             )
             assert total_followed == len(i_exist_user["followed"])
+        for i_unexist_user in UNEXIST_USERS:
+            total_followed = await User.get_total_followed_by_name(
+                i_unexist_user["name"]
+            )
+            assert total_followed == len(i_unexist_user["followed"])
 
     @staticmethod
     @pytest_mark.asyncio

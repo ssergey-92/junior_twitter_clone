@@ -1,6 +1,6 @@
 from os import environ as os_environ
 
-from pytest import mark as pytest_mark
+from pytest import mark as pytest_mark, raises as pytest_raises
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
@@ -17,16 +17,22 @@ from ..app.database import (
 from .common_data_for_tests import DEFAULT_TABLE_NAMES
 
 
-def test_get_async_engine():
+def test_get_async_engine()-> None:
     async_engine = get_async_engine()
     assert async_engine.pool.status() == "NullPool"
     os_environ.pop("PYTEST_ASYNC_ENGINE")
     async_engine = get_async_engine()
     assert async_engine.pool.status() != "NullPool"
+    os_environ.pop("DATABASE_URL")
+    print(os_environ.get("DATABASE_URL"))
+    with pytest_raises(SystemExit):
+        get_async_engine()
 
 
 @pytest_mark.asyncio
-async def test_create_tables(test_session: AsyncSession):
+async def test_create_tables(
+        recreate_all_tables, test_session: AsyncSession,
+) -> None:
     table_names_query = await test_session.execute(
         text("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
     )
@@ -35,7 +41,9 @@ async def test_create_tables(test_session: AsyncSession):
 
 
 @pytest_mark.asyncio
-async def test_init_db(recreate_all_tables, test_session: AsyncSession):
+async def test_init_db(
+        recreate_all_tables: None, test_session: AsyncSession,
+) -> None:
     await init_db()
     total_users = await test_session.execute(select(func.count(User.id)))
     assert total_users.scalar() == 5
