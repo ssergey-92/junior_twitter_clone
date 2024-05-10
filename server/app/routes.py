@@ -317,7 +317,7 @@ async def get_fake_twitter_app() -> FastAPI:
         api_key: Annotated[str, Header()], response: Response,
     ) -> Union[UserProfileDetailsOut, ErrorResponse]:
         fake_twitter_logger.info(f"{api_key=}")
-        details, http_code = await HandleEndpoint.get_own_profile_details(
+        details, http_code = await HandleEndpoint.get_own_profile(
             api_key,
         )
         fake_twitter_logger.info(f"{details=}, {http_code=}")
@@ -339,7 +339,7 @@ async def get_fake_twitter_app() -> FastAPI:
         id: int, api_key: Annotated[str, Header()], response: Response,
     ) -> Union[UserProfileDetailsOut, ErrorResponse]:
         fake_twitter_logger.info(f"{api_key=}")
-        details, http_code = await HandleEndpoint.get_user_profile_details(id)
+        details, http_code = await HandleEndpoint.get_user_profile(id)
         fake_twitter_logger.info(f"{details=}, {http_code=}")
         response.status_code = http_code
         if http_code == 200:

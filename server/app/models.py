@@ -124,7 +124,7 @@ class HandleEndpoint:
         return response_message, 200
 
     @staticmethod
-    async def get_user_profile_details(user_id: int) -> tuple[dict, int]:
+    async def get_user_profile(user_id: int) -> tuple[dict, int]:
         user = await User.get_user_by_id(user_id)
         if not user:
             return HandleEndpoint._create_bad_request_response(
@@ -135,7 +135,7 @@ class HandleEndpoint:
         return response_message, 200
 
     @staticmethod
-    async def get_own_profile_details(api_key: str) -> tuple[dict, int]:
+    async def get_own_profile(api_key: str) -> tuple[dict, int]:
         user = await User.get_user_by_name(api_key)
         if not user:
             return HandleEndpoint._create_unregister_response()

@@ -21,9 +21,7 @@ class TestGetTweetFeedEndpoint:
             url=FAKE_TWITTER_ENDPOINTS["get_tweet_feed"]["endpoint"],
             headers=AUTHORIZED_HEADER,
         )
-        tweet_feed = response.json()
-        assert tweet_feed == CORRECT_GET_TWEET_FEED_RESPONSE["tweet_feed"]
-        assert (
-            response.status_code
-            == CORRECT_GET_TWEET_FEED_RESPONSE["http_status_code"]
-        )
+        assert response.json() == CORRECT_GET_TWEET_FEED_RESPONSE["tweet_feed"]
+        assert (response.status_code ==
+                CORRECT_GET_TWEET_FEED_RESPONSE["status_code"])
+

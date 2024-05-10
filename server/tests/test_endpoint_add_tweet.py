@@ -11,25 +11,41 @@ from .common_data_for_tests import (
     FAKE_TWITTER_ENDPOINTS,
 )
 
-ADD_TWEET_ENDPOINT = FAKE_TWITTER_ENDPOINTS["add_tweet"]["endpoint"]
-ADD_TWEET_HTTP_METHOD = FAKE_TWITTER_ENDPOINTS["add_tweet"]["http_method"]
-CORRECT_TWEET_BODY_DATA_AND_RESPONSE = [
-    ({"tweet_data": "tweet # 4"}, {"result": True, "tweet_id": 4}),
-    (
-        {"tweet_data": "tweet # 5", "tweet_media_ids": None},
-        {"result": True, "tweet_id": 5},
+add_tweet_endpoint = FAKE_TWITTER_ENDPOINTS["add_tweet"]["endpoint"]
+add_tweet_http_method = FAKE_TWITTER_ENDPOINTS["add_tweet"]["http_method"]
+correct_tweet_body_data_and_response = (
+    {
+        "body": {"tweet_data": "tweet # 4"},
+        "result": {
+            "message": {"result": True, "tweet_id": 4},
+            "status_code": CREATED_STATUS_CODE,
+        },
+    },
+    {
+        "body": {"tweet_data": "tweet # 5", "tweet_media_ids": None},
+        "result": {
+            "message": {"result": True, "tweet_id": 5},
+            "status_code": CREATED_STATUS_CODE,
+        },
+    },
+    {
+        "body": {"tweet_data": "tweet # 6", "tweet_media_ids": [1, 2]},
+        "result": {
+            "message": {"result": True, "tweet_id": 6},
+            "status_code": CREATED_STATUS_CODE,
+        },
+    },
+)
+incorrect_tweet_body_data = {
+    "body": (
+        {"tweet_data": 123},
+        {"tweet_media_ids": [1, 3]},
+        {"tweet_data": "str", "tweet_media_ids": [1, "number"]},
     ),
-    (
-        {"tweet_data": "tweet # 6", "tweet_media_ids": [1, 2]},
-        {"result": True, "tweet_id": 6},
-    ),
-]
-INCORRECT_TWEET_BODY_DATA = [
-    {},
-    {"tweet_data": 123},
-    {"tweet_media_ids": [1, 3]},
-    {"tweet_data": "str", "tweet_media_ids": [1, "number"]},
-]
+    "result": {
+        "message": ERROR_MESSAGE, "status_code": BAD_REQUEST_STATUS_CODE
+    },
+}
 
 
 class TestAddTweetEndpoint:
@@ -38,19 +54,22 @@ class TestAddTweetEndpoint:
     async def test_validation_handler_for_incorrect_request_body(
         client: AsyncClient,
     ) -> None:
-        for i_data in INCORRECT_TWEET_BODY_DATA:
+        for i_body in incorrect_tweet_body_data["body"]:
             response = await client.request(
-                method=ADD_TWEET_HTTP_METHOD,
-                url=ADD_TWEET_ENDPOINT,
+                method=add_tweet_http_method,
+                url=add_tweet_endpoint,
                 headers=AUTHORIZED_HEADER,
-                json=i_data,
+                json=i_body,
             )
             response_data = response.json()
-            assert response.status_code == BAD_REQUEST_STATUS_CODE
-            assert response_data.get("result", None) == ERROR_MESSAGE["result"]
-            assert response_data.keys() == ERROR_MESSAGE.keys()
-            assert isinstance(response_data.get("error_type", None), str)
-            assert isinstance(response_data.get("error_message", None), str)
+            assert (response.status_code ==
+                    incorrect_tweet_body_data["result"]["status_code"])
+            assert (response_data.keys() ==
+                    incorrect_tweet_body_data["result"]["message"].keys())
+            assert (response_data["result"] ==
+                    incorrect_tweet_body_data["result"]["message"]["result"])
+            assert isinstance(response_data.get("error_type"), str)
+            assert isinstance(response_data.get("error_message"), str)
 
     @staticmethod
     @pytest_mark.asyncio
@@ -58,15 +77,15 @@ class TestAddTweetEndpoint:
         client: AsyncClient,
         init_test_data_for_db: None,
     ) -> None:
-        for i_data in CORRECT_TWEET_BODY_DATA_AND_RESPONSE:
+        for i_data in correct_tweet_body_data_and_response:
             response = await client.request(
-                method=ADD_TWEET_HTTP_METHOD,
-                url=ADD_TWEET_ENDPOINT,
+                method=add_tweet_http_method,
+                url=add_tweet_endpoint,
                 headers=AUTHORIZED_HEADER,
-                json=i_data[0],
+                json=i_data["body"],
             )
-            assert response.json() == i_data[1]
-            assert response.status_code == CREATED_STATUS_CODE
+            assert response.json() == i_data["result"]["message"]
+            assert response.status_code == i_data["result"]["status_code"]
 
     @staticmethod
     @pytest_mark.asyncio
@@ -76,10 +95,10 @@ class TestAddTweetEndpoint:
     ) -> None:
         total_tweets_before = await Tweet.get_total_tweets()
         await client.request(
-            method=ADD_TWEET_HTTP_METHOD,
-            url=ADD_TWEET_ENDPOINT,
+            method=add_tweet_http_method,
+            url=add_tweet_endpoint,
             headers=AUTHORIZED_HEADER,
-            json=CORRECT_TWEET_BODY_DATA_AND_RESPONSE[0][0],
+            json=correct_tweet_body_data_and_response[0]["body"],
         )
         total_tweets_after = await Tweet.get_total_tweets()
         assert total_tweets_before + 1 == total_tweets_after

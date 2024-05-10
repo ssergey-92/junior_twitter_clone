@@ -1,13 +1,13 @@
-from os import environ as os_environ
-from os import path as os_path
+"""File with default data for testing."""
+from os import environ as os_environ, path as os_path
 from typing import BinaryIO
 
 DEFAULT_TABLE_NAMES = [
-    "users",
     "followers",
     "media_files",
     "tweets",
     "tweets_likes",
+    "users",
 ]
 OK_STATUS_CODE = 200
 CREATED_STATUS_CODE = 201
@@ -41,37 +41,39 @@ FAKE_TWITTER_ENDPOINTS = {
     "get_user_profile": {"endpoint": "/api/users/{id}", "http_method": "GET"},
 }
 ERROR_MESSAGE = {"result": False, "error_type": "", "error_message": ""}
-FILE_DIR_PATH = os_path.dirname(__file__)
-DEFAULT_TEST_IMAGES_PATH = os_path.join(FILE_DIR_PATH, "test_images/default")
+file_dir_path = os_path.dirname(__file__)
+DEFAULT_TEST_IMAGES_PATH = os_path.join(file_dir_path, "test_images/default")
 SAVE_MEDIA_ABS_PATH = os_path.join(
-    FILE_DIR_PATH, os_environ.get("SAVE_MEDIA_REL_PATH")
+    file_dir_path, os_environ.get("SAVE_MEDIA_REL_PATH", ""),
 )
 test_user_1 = {"name": "test_1", "id": 1}
 test_user_2 = {"name": "test_2", "id": 2}
 test_user_3 = {"name": "test_3", "id": 3}
+DEFAULT_TOTAL_USERS = 3
 test_user_1["followers"] = [
-    {"name": test_user_3["name"], "id": test_user_3["id"]}
+    {"name": test_user_3["name"], "id": test_user_3["id"]},
 ]
 test_user_2["followers"] = [
-    {"name": test_user_1["name"], "id": test_user_1["id"]}
+    {"name": test_user_1["name"], "id": test_user_1["id"]},
 ]
 test_user_3["followers"] = []
 test_user_1["followed"] = [
-    {"name": test_user_2["name"], "id": test_user_2["id"]}
+    {"name": test_user_2["name"], "id": test_user_2["id"]},
 ]
 test_user_2["followed"] = []
 test_user_3["followed"] = [
-    {"name": test_user_1["name"], "id": test_user_1["id"]}
+    {"name": test_user_1["name"], "id": test_user_1["id"]},
 ]
+DEFAULT_TOTAL_FOLLOWERS = 4
 test_user_profile = test_user_1.copy()
 test_user_profile["following"] = test_user_profile.pop("followed")
 CORRECT_GET_USER_PROFILE_RESPONSE = {
-    "user_profile": {"result": True, "user": test_user_profile},
-    "http_status_code": OK_STATUS_CODE,
+    "profile": {"result": True, "user": test_user_profile},
+    "status_code": OK_STATUS_CODE,
 }
 CORRECT_GET_OWN_PROFILE_RESPONSE = {
-    "own_profile": {"result": True, "user": test_user_profile},
-    "http_status_code": OK_STATUS_CODE,
+    "profile": {"result": True, "user": test_user_profile},
+    "status_code": OK_STATUS_CODE,
 }
 AUTHORIZED_HEADER = {"api-key": test_user_1["name"]}
 
@@ -153,16 +155,24 @@ SORTED_TWEET_FEED = [
 ]
 CORRECT_GET_TWEET_FEED_RESPONSE = {
     "tweet_feed": {"result": True, "tweets": SORTED_TWEET_FEED},
-    "http_status_code": OK_STATUS_CODE,
+    "status_code": OK_STATUS_CODE,
 }
 CORRECT_GET_TWEET_FEED_RESPONSE_2 = {
-    "tweet_feed": {"result": True, "tweets": list()},
-    "http_status_code": OK_STATUS_CODE,
+    "tweet_feed": {"result": True, "tweets": []},
+    "status_code": OK_STATUS_CODE,
 }
 
 
 def open_test_image(file_name: str) -> BinaryIO:
+    """Open images from default test images folder.
+
+    Args:
+        file_name (str): file name
+
+    Returns:
+        BinaryIo : opened file
+    """
     abs_image_path = os_path.abspath(
-        os_path.join(DEFAULT_TEST_IMAGES_PATH, file_name)
+        os_path.join(DEFAULT_TEST_IMAGES_PATH, file_name),
     )
     return open(abs_image_path, "rb")

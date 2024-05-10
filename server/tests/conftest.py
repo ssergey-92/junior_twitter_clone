@@ -1,3 +1,4 @@
+"""Configuration file for pytest."""
 from os import environ as os_environ
 from os import listdir as os_listdir
 from os import mkdir as os_mkdir
@@ -10,6 +11,7 @@ from httpx import ASGITransport, AsyncClient
 from pytest import fixture as sync_fixture
 from pytest_asyncio import fixture as async_fixture
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing_extensions import AsyncGenerator
 
 from server.app.database import (
     Base,
@@ -20,8 +22,7 @@ from server.app.database import (
     async_engine,
     async_session,
 )
-from server.app.routes import application, get_fake_twitter_app
-
+from server.app.routes import application
 from .common_data_for_tests import (
     DEFAULT_TEST_IMAGES_PATH,
     LIKE_1_1,
@@ -42,69 +43,51 @@ from .common_data_for_tests import (
     test_user_3,
 )
 
-# async def override_dependency_save_media_file_in_sys(
-#             media_file: UploadFile,
-#             unique_filename: str) -> None:
-#     # 'app/tests/test_images'
-#     pass
-#
-# application.dependency_overrides[HandleEndpoint._save_media_file_in_sys] \
-#         = override_dependency_save_media_file_in_sys
+
+@async_fixture(autouse=True, scope="session")
+async def add_paths_to_os_environ() -> None:
+    """Add 'SAVE_MEDIA_PATH' to os.environ."""
+    os_environ["SAVE_MEDIA_PATH"] = SAVE_MEDIA_ABS_PATH
 
 
-@async_fixture(scope="session")
-async def add_media_path_to_environ() -> None:
-    print("------11111111111111", "add_data_to_environ")
+@async_fixture(scope="function")
+async def reset_os_environ_paths() -> AsyncGenerator:
+    """Add 'SAVE_MEDIA_PATH' to os.environ. after func call."""
+    yield
     os_environ["SAVE_MEDIA_PATH"] = SAVE_MEDIA_ABS_PATH
 
 
 @async_fixture(scope="session")
-async def app(add_media_path_to_environ) -> FastAPI:
-    print("0000000000000000000000000000", "creating app")
-    # application = await get_fake_twitter_app()
+async def app() -> FastAPI:
+    """Return FastApi app."""
     return application
 
 
 @sync_fixture(scope="session")
 async def app_routes(app) -> list:
-    print("000000000000000011111111", "creating app.routes")
+    """Return list of urls for of application."""
     return [route.path for route in app.routes]
-
-
-# @sync_fixture(autouse=True, scope="session")
-# def app() -> FastAPI:
-#     application = fake_twitter_app
-#     yield application
-#
-#
-# @sync_fixture(autouse=True, scope="session")
-# def api_routes_details(app) -> list:
-#     api_routes = list()
-#     for route in app.routes:
-#         if route.path.startswith('/api/'):
-#             api_routes.append((route.path, route.methods))
-#     yield api_routes
 
 
 @async_fixture(scope="session")
 async def client(app) -> AsyncClient:
-    print(1111111111111111111111111111111111, "client")
+    """Yield asynchronous client."""
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test",
     ) as async_client:
         yield async_client
 
 
 @async_fixture(scope="function")
 async def test_session() -> AsyncSession:
-    print(22222222222222222222222222222222222222222, "session")
+    """Yield asynchronous session for db connection."""
     async with async_session() as session:
         yield session
 
 
 @async_fixture(scope="function")
 async def recreate_all_tables() -> None:
-    print(333333333333333333333333333, "recriate")
+    """Remove and then create all tables for db."""
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
@@ -112,9 +95,9 @@ async def recreate_all_tables() -> None:
 
 @async_fixture(scope="function")
 async def init_test_data_for_db(
-    recreate_all_tables: None, test_session: AsyncSession
+    recreate_all_tables: None, test_session: AsyncSession,
 ) -> None:
-    print(444444444444444444444444444444444, "init data")
+    """Init db default test data for testing."""
     test_1 = User(name=test_user_1["name"])
     test_2 = User(name=test_user_2["name"])
     test_3 = User(name=test_user_3["name"])
@@ -151,50 +134,47 @@ async def init_test_data_for_db(
                 tweet_data=TWEET_3["tweet_data"],
                 tweet_media_ids=TWEET_3.get("tweet_media_ids", None),
             ),
-        ]
+        ],
     )
     await test_session.commit()
     test_session.add_all(
         [
             TweetLike(
-                tweet_id=LIKE_1_1["tweet_id"], user_name=LIKE_1_1["user_name"]
+                tweet_id=LIKE_1_1["tweet_id"], user_name=LIKE_1_1["user_name"],
             ),
             TweetLike(
-                tweet_id=LIKE_2_2["tweet_id"], user_name=LIKE_2_2["user_name"]
+                tweet_id=LIKE_2_2["tweet_id"], user_name=LIKE_2_2["user_name"],
             ),
             TweetLike(
-                tweet_id=LIKE_2_3["tweet_id"], user_name=LIKE_2_3["user_name"]
+                tweet_id=LIKE_2_3["tweet_id"], user_name=LIKE_2_3["user_name"],
             ),
             TweetLike(
-                tweet_id=LIKE_3_1["tweet_id"], user_name=LIKE_3_1["user_name"]
+                tweet_id=LIKE_3_1["tweet_id"], user_name=LIKE_3_1["user_name"],
             ),
             TweetLike(
-                tweet_id=LIKE_3_2["tweet_id"], user_name=LIKE_3_2["user_name"]
+                tweet_id=LIKE_3_2["tweet_id"], user_name=LIKE_3_2["user_name"],
             ),
             TweetLike(
-                tweet_id=LIKE_3_3["tweet_id"], user_name=LIKE_3_3["user_name"]
+                tweet_id=LIKE_3_3["tweet_id"], user_name=LIKE_3_3["user_name"],
             ),
-        ]
+        ],
     )
     await test_session.commit()
 
 
 @sync_fixture(scope="function")
-def init_test_folders() -> None:
+def init_test_folders() -> AsyncGenerator:
+    """create test folders for saving media and remove then after test."""
     if os_path.exists(SAVE_MEDIA_ABS_PATH):
-        print(66666666666666666666666666666666, "delete_media_files_from_test")
         shutil_rmtree(SAVE_MEDIA_ABS_PATH)
-    print(44444444444444444555555555555555555, " init_test_folders")
     os_mkdir(SAVE_MEDIA_ABS_PATH)
     yield
-    print(66666666666666666666666666666666, "delete_media_files_from_test")
     shutil_rmtree(SAVE_MEDIA_ABS_PATH)
 
 
 @sync_fixture(scope="function")
 def init_midia_file_for_test(init_test_folders) -> None:
-    print(55555555555555555555555555, "handle_saving_images_during_test")
-    print(SAVE_MEDIA_ABS_PATH)
+    """Init media files for test."""
     for i_filename in os_listdir(DEFAULT_TEST_IMAGES_PATH):
         shutil_copy(
             os_path.join(DEFAULT_TEST_IMAGES_PATH, i_filename),
