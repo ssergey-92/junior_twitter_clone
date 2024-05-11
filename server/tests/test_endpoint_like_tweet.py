@@ -1,3 +1,4 @@
+"""Module for testing endpoint 'like tweet' from app.routes.py ."""
 from httpx import AsyncClient
 from pytest import mark as pytest_mark
 
@@ -5,19 +6,38 @@ from ..app.database import TweetLike
 from .common_data_for_tests import (
     AUTHORIZED_HEADER,
     BAD_REQUEST_STATUS_CODE,
+    CREATED_STATUS_CODE,
     ERROR_MESSAGE,
     FAKE_TWITTER_ENDPOINTS,
+    test_user_1,
 )
 
 like_tweet_endpoint = FAKE_TWITTER_ENDPOINTS["like_tweet"]["endpoint"]
-LIKE_TWEET_HTTP_METHOD = FAKE_TWITTER_ENDPOINTS["like_tweet"]["http_method"]
-INVALID_LIKE_TWEET_ENDPOINTS = (
-    like_tweet_endpoint.format(id="ten"),
-    like_tweet_endpoint.format(id=()),
-)
-USER_CAN_LIKE_TWEET = {"user_header": AUTHORIZED_HEADER, "tweet_id": 2}
-USER_LIKED_TWEET = {"user_header": AUTHORIZED_HEADER, "tweet_id": 1}
-CORRECT_LIKE_TWEET_RESPONSE = {"result": True}
+like_tweet_method = FAKE_TWITTER_ENDPOINTS["like_tweet"]["http_method"]
+invalid_like_tweet_url = {
+    "urls": (
+        like_tweet_endpoint.format(id="ten"),
+        like_tweet_endpoint.format(id=()),
+    ),
+    "header": AUTHORIZED_HEADER,
+    "result": {
+        "message": ERROR_MESSAGE, "status_code": BAD_REQUEST_STATUS_CODE,
+    },
+}
+user_can_like_tweet = {
+    "header": {"api-key": test_user_1["name"]},
+    "url": like_tweet_endpoint.format(id=2),
+    "result": {
+        "message": {"result": True}, "status_code": CREATED_STATUS_CODE,
+    },
+}
+user_liked_tweet = {
+    "header": {"api-key": test_user_1["name"]},
+    "url": like_tweet_endpoint.format(id=1),
+    "result": {
+        "message": ERROR_MESSAGE, "status_code": BAD_REQUEST_STATUS_CODE,
+    },
+}
 
 
 class TestLikeTweetEndpoint:
@@ -27,59 +47,64 @@ class TestLikeTweetEndpoint:
     async def test_validation_handler_for_incorrect_path_parameter(
         client: AsyncClient,
     ) -> None:
-        for i_endpoint in INVALID_LIKE_TWEET_ENDPOINTS:
+        for i_url in invalid_like_tweet_url["urls"]:
             response = await client.request(
-                method=LIKE_TWEET_HTTP_METHOD,
-                url=i_endpoint,
-                headers=AUTHORIZED_HEADER,
+                method=like_tweet_method,
+                url=i_url,
+                headers=invalid_like_tweet_url["header"],
             )
             response_data = response.json()
-            assert response.status_code == BAD_REQUEST_STATUS_CODE
-            assert response_data.get("result", None) == ERROR_MESSAGE["result"]
-            assert response_data.keys() == ERROR_MESSAGE.keys()
-            assert isinstance(response_data.get("error_type", None), str)
-            assert isinstance(response_data.get("error_message", None), str)
+            expected_message = invalid_like_tweet_url["result"]["message"]
+            assert (response.status_code ==
+                    invalid_like_tweet_url["result"]["status_code"])
+            assert response_data.keys() == expected_message.keys()
+            assert response_data["result"] == expected_message["result"]
+            assert isinstance(response_data["error_type"], str)
+            assert isinstance(response_data["error_message"], str)
 
     @staticmethod
     @pytest_mark.asyncio
     async def test_endpoint_for_correct_response(
-        client: AsyncClient, init_test_data_for_db: None
+        client: AsyncClient, init_test_data_for_db: None,
     ) -> None:
         response = await client.request(
-            method=LIKE_TWEET_HTTP_METHOD,
-            url=like_tweet_endpoint.format(id=USER_CAN_LIKE_TWEET["tweet_id"]),
-            headers=USER_CAN_LIKE_TWEET["user_header"],
+            method=like_tweet_method,
+            url=user_can_like_tweet["url"],
+            headers=user_can_like_tweet["header"],
         )
-        assert response.json() == CORRECT_LIKE_TWEET_RESPONSE
-        assert response.status_code == 201
+        assert response.json() == user_can_like_tweet["result"]["message"]
+        assert (response.status_code ==
+                user_can_like_tweet["result"]["status_code"])
 
     @staticmethod
     @pytest_mark.asyncio
     async def test_that_user_can_not_like_tweet_two_times(
-        client: AsyncClient, init_test_data_for_db: None
+        client: AsyncClient, init_test_data_for_db: None,
     ) -> None:
         response = await client.request(
-            method=LIKE_TWEET_HTTP_METHOD,
-            url=like_tweet_endpoint.format(id=USER_LIKED_TWEET["tweet_id"]),
-            headers=USER_LIKED_TWEET["user_header"],
+            method=like_tweet_method,
+            url=user_liked_tweet["url"],
+            headers=user_liked_tweet["header"],
         )
         response_data = response.json()
-        assert response.status_code == BAD_REQUEST_STATUS_CODE
-        assert response_data.get("result", None) == ERROR_MESSAGE["result"]
-        assert response_data.keys() == ERROR_MESSAGE.keys()
-        assert isinstance(response_data.get("error_type", None), str)
-        assert isinstance(response_data.get("error_message", None), str)
+        expected_message = user_liked_tweet["result"]["message"]
+        assert (response.status_code ==
+                user_liked_tweet["result"]["status_code"])
+        assert response_data.keys() == expected_message.keys()
+        assert response_data["result"] == expected_message["result"]
+        assert isinstance(response_data["error_type"], str)
+        assert isinstance(response_data["error_message"], str)
 
     @staticmethod
     @pytest_mark.asyncio
     async def test_that_like_details_inserted_in_db(
-        client: AsyncClient, init_test_data_for_db: None
+        client: AsyncClient, init_test_data_for_db: None,
     ) -> None:
         total_likes_before = await TweetLike.get_total_likes()
         await client.request(
-            method=LIKE_TWEET_HTTP_METHOD,
-            url=like_tweet_endpoint.format(id=USER_CAN_LIKE_TWEET["tweet_id"]),
-            headers=USER_CAN_LIKE_TWEET["user_header"],
+            method=like_tweet_method,
+            url=user_can_like_tweet["url"],
+            headers=user_can_like_tweet["header"],
         )
         total_likes_after = await TweetLike.get_total_likes()
         assert total_likes_before + 1 == total_likes_after

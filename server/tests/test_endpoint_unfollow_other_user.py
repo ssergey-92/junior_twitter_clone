@@ -1,3 +1,4 @@
+"""Module for testing endpoint 'unfollow other user' from app.routes.py ."""
 from httpx import AsyncClient
 from pytest import mark as pytest_mark
 
@@ -5,27 +6,39 @@ from ..app.database import User
 from .common_data_for_tests import (
     AUTHORIZED_HEADER,
     BAD_REQUEST_STATUS_CODE,
+    CREATED_STATUS_CODE,
     ERROR_MESSAGE,
     FAKE_TWITTER_ENDPOINTS,
+    test_user_1,
 )
 
 unfollow_user_endpoint = FAKE_TWITTER_ENDPOINTS["unfollow_user"]["endpoint"]
-UNFOLLOW_USER_HTTP_METHOD = FAKE_TWITTER_ENDPOINTS["unfollow_user"][
-    "http_method"
-]
-INVALID_UNFOLLOW_USER_ENDPOINTS = (
-    unfollow_user_endpoint.format(id="ten"),
-    unfollow_user_endpoint.format(id=()),
-)
-USER_CAN_UNFOLLOW_USER = {
-    "user_header": AUTHORIZED_HEADER,
-    "followed_user_id": 2,
+unfollow_user_method = FAKE_TWITTER_ENDPOINTS["unfollow_user"]["http_method"]
+invalid_unfollow_user_data = {
+    "urls": (
+        unfollow_user_endpoint.format(id="ten"),
+        unfollow_user_endpoint.format(id=()),
+    ),
+    "header": AUTHORIZED_HEADER,
+    "result": {
+        "message": ERROR_MESSAGE, "status_code": BAD_REQUEST_STATUS_CODE,
+    },
 }
-USER_NOT_FOLLOWING_USER = {
-    "user_header": AUTHORIZED_HEADER,
-    "followed_user_id": 3,
+user_can_unfollow_user = {
+    "user_name": test_user_1["name"],
+    "url": unfollow_user_endpoint.format(id=2),
+    "header": {"api-key": test_user_1["name"]},
+    "result": {
+        "message": {"result": True}, "status_code": CREATED_STATUS_CODE,
+    },
 }
-CORRECT_UNFOLLOW_USER_RESPONSE = {"result": True}
+user_not_following_user = {
+    "url": unfollow_user_endpoint.format(id=3),
+    "header": {"api-key": test_user_1["name"]},
+    "result": {
+        "message": ERROR_MESSAGE, "status_code": BAD_REQUEST_STATUS_CODE,
+    },
+}
 
 
 class TestUnfollowOtherUserEndpoint:
@@ -35,69 +48,68 @@ class TestUnfollowOtherUserEndpoint:
     async def test_validation_handler_for_incorrect_path_parameter(
         client: AsyncClient,
     ) -> None:
-        for i_endpoint in INVALID_UNFOLLOW_USER_ENDPOINTS:
+        for i_url in invalid_unfollow_user_data["urls"]:
             response = await client.request(
-                method=UNFOLLOW_USER_HTTP_METHOD,
-                url=i_endpoint,
-                headers=AUTHORIZED_HEADER,
+                method=unfollow_user_method,
+                url=i_url,
+                headers=invalid_unfollow_user_data["header"],
             )
             response_data = response.json()
-            assert response.status_code == BAD_REQUEST_STATUS_CODE
-            assert response_data.get("result", None) == ERROR_MESSAGE["result"]
-            assert response_data.keys() == ERROR_MESSAGE.keys()
-            assert isinstance(response_data.get("error_type", None), str)
-            assert isinstance(response_data.get("error_message", None), str)
+            expected_message = invalid_unfollow_user_data["result"]["message"]
+            assert (response.status_code ==
+                    invalid_unfollow_user_data["result"]["status_code"])
+            assert response_data.keys() == expected_message.keys()
+            assert response_data["result"] == expected_message["result"]
+            assert isinstance(response_data["error_type"], str)
+            assert isinstance(response_data["error_message"], str)
 
     @staticmethod
     @pytest_mark.asyncio
     async def test_endpoint_for_correct_response(
-        client: AsyncClient, init_test_data_for_db: None
+        client: AsyncClient, init_test_data_for_db: None,
     ) -> None:
         response = await client.request(
-            method=UNFOLLOW_USER_HTTP_METHOD,
-            url=unfollow_user_endpoint.format(
-                id=USER_CAN_UNFOLLOW_USER["followed_user_id"]
-            ),
-            headers=USER_CAN_UNFOLLOW_USER["user_header"],
+            method=unfollow_user_method,
+            url=user_can_unfollow_user["url"],
+            headers=user_can_unfollow_user["header"],
         )
-        assert response.json() == CORRECT_UNFOLLOW_USER_RESPONSE
-        assert response.status_code == 201
+        assert response.json() == user_can_unfollow_user["result"]["message"]
+        assert (response.status_code ==
+                user_can_unfollow_user["result"]["status_code"])
 
     @staticmethod
     @pytest_mark.asyncio
     async def test_that_user_can_not_unfollow_not_followed_user(
-        client: AsyncClient, init_test_data_for_db: None
+        client: AsyncClient, init_test_data_for_db: None,
     ) -> None:
         response = await client.request(
-            method=UNFOLLOW_USER_HTTP_METHOD,
-            url=unfollow_user_endpoint.format(
-                id=USER_NOT_FOLLOWING_USER["followed_user_id"]
-            ),
-            headers=USER_NOT_FOLLOWING_USER["user_header"],
+            method=unfollow_user_method,
+            url=user_not_following_user["url"],
+            headers=user_not_following_user["header"],
         )
         response_data = response.json()
-        assert response.status_code == BAD_REQUEST_STATUS_CODE
-        assert response_data.get("result", None) == ERROR_MESSAGE["result"]
-        assert response_data.keys() == ERROR_MESSAGE.keys()
-        assert isinstance(response_data.get("error_type", None), str)
-        assert isinstance(response_data.get("error_message", None), str)
+        expected_message = user_not_following_user["result"]["message"]
+        assert (response.status_code ==
+                user_not_following_user["result"]["status_code"])
+        assert response_data.keys() == expected_message.keys()
+        assert response_data["result"] == expected_message["result"]
+        assert isinstance(response_data["error_type"], str)
+        assert isinstance(response_data["error_message"], str)
 
     @staticmethod
     @pytest_mark.asyncio
     async def test_that_followed_details_removed_from_db(
-        client: AsyncClient, init_test_data_for_db: None
+        client: AsyncClient, init_test_data_for_db: None,
     ) -> None:
         total_followed_before = await User.get_total_followed_by_name(
-            AUTHORIZED_HEADER["api-key"]
+            user_can_unfollow_user["user_name"],
         )
-        response = await client.request(
-            method=UNFOLLOW_USER_HTTP_METHOD,
-            url=unfollow_user_endpoint.format(
-                id=USER_CAN_UNFOLLOW_USER["followed_user_id"]
-            ),
-            headers=USER_CAN_UNFOLLOW_USER["user_header"],
+        await client.request(
+            method=unfollow_user_method,
+            url=user_can_unfollow_user["url"],
+            headers=user_can_unfollow_user["header"],
         )
         total_followed_after = await User.get_total_followed_by_name(
-            AUTHORIZED_HEADER["api-key"]
+            user_can_unfollow_user["user_name"],
         )
         assert total_followed_before - 1 == total_followed_after

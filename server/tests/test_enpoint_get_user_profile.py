@@ -1,3 +1,4 @@
+"""Module for testing endpoint 'get user profile' from app.routes.py ."""
 from httpx import AsyncClient
 from pytest import mark as pytest_mark
 
@@ -9,12 +10,9 @@ from .common_data_for_tests import (
     FAKE_TWITTER_ENDPOINTS,
 )
 
-get_user_profile_endpoint = FAKE_TWITTER_ENDPOINTS["get_user_profile"][
-    "endpoint"
-]
-get_user_profile_http_method = FAKE_TWITTER_ENDPOINTS["get_user_profile"][
-    "http_method"
-]
+get_user_profile_url = FAKE_TWITTER_ENDPOINTS["get_user_profile"]["endpoint"]
+get_user_profile_method = (
+    FAKE_TWITTER_ENDPOINTS["get_user_profile"]["http_method"])
 exist_user_id = CORRECT_GET_USER_PROFILE_RESPONSE["profile"]["user"]["id"]
 unexist_user_id = 0
 
@@ -27,8 +25,8 @@ class TestGetUserProfileEndpoint:
         client: AsyncClient, init_test_data_for_db: None,
     ) -> None:
         response = await client.request(
-            method=get_user_profile_http_method,
-            url=get_user_profile_endpoint.format(id=unexist_user_id),
+            method=get_user_profile_method,
+            url=get_user_profile_url.format(id=unexist_user_id),
             headers=AUTHORIZED_HEADER,
         )
         response_data = response.json()
@@ -41,15 +39,14 @@ class TestGetUserProfileEndpoint:
     @staticmethod
     @pytest_mark.asyncio
     async def test_endpoint_for_correct_response(
-        client: AsyncClient, init_test_data_for_db: None
+        client: AsyncClient, init_test_data_for_db: None,
     ) -> None:
         response = await client.request(
-            method=get_user_profile_http_method,
-            url=get_user_profile_endpoint.format(id=exist_user_id),
+            method=get_user_profile_method,
+            url=get_user_profile_url.format(id=exist_user_id),
             headers=AUTHORIZED_HEADER,
         )
         own_profile = response.json()
         assert own_profile == CORRECT_GET_USER_PROFILE_RESPONSE["profile"]
         assert (response.status_code ==
                 CORRECT_GET_USER_PROFILE_RESPONSE["status_code"])
-

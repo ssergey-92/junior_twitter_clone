@@ -1,3 +1,4 @@
+"""Module for testing class HandleEndpoint from app.models.py ."""
 from os import environ as os_environ, listdir as os_listdir
 
 from fastapi import UploadFile
@@ -30,11 +31,11 @@ from .common_data_for_tests import (
 )
 
 supported_media_files_data = {
-    "file_names": (FILE_NAME_1, FILE_NAME_2, FILE_NAME_3,),
+    "file_names": (FILE_NAME_1, FILE_NAME_2, FILE_NAME_3),
     "result": True,
 }
 unsupported_media_files_data = {
-    "file_names": ("extension.svg", "extension.pjpeg", "extension.jfif",),
+    "file_names": ("extension.svg", "extension.pjpeg", "extension.jfif"),
     "result": False,
 }
 media_files_data = (supported_media_files_data, unsupported_media_files_data)
@@ -63,12 +64,11 @@ new_tweets_to_add = (
 valid_add_media_files_data = (
     {
         "file": UploadFile(
-            filename="new_file.jpg", file=open_test_image(FILE_NAME_1)
+            filename="new_file.jpg", file=open_test_image(FILE_NAME_1),
         ),
         "api_key": test_user_1["name"],
         "result": {
-            "message": {"media_id": 4},
-            "status_code": CREATED_STATUS_CODE
+            "message": {"media_id": 4}, "status_code": CREATED_STATUS_CODE,
         },
     },
 )
@@ -84,7 +84,7 @@ forbidden_response = {
 invalid_add_media_files_data = (
     {
         "file": UploadFile(
-            filename="new_file.ggg", file=open_test_image(FILE_NAME_1)
+            filename="new_file.ggg", file=open_test_image(FILE_NAME_1),
         ),
         "api_key": test_user_1["name"],
         "result": bad_request_response,
@@ -152,8 +152,8 @@ user_can_unfollow_user = {
     "result": {"message": None, "status_code": CREATED_STATUS_CODE},
 }
 user_cannot_unfollow_user = (
-    {  # user does not follow him
-        "api_key": test_user_1["name"],
+    {
+        "api_key": test_user_1["name"],  # user does not follow him
         "followed_id": 3,
         "result": bad_request_response,
     },
@@ -164,10 +164,10 @@ user_cannot_unfollow_user = (
     },
 )
 invalid_data_get_user_profile = {
-    "result": unregister_response, "id": unexist_user["id"]
+    "result": unregister_response, "id": unexist_user["id"],
 }
 invalid_data_get_own_profile = {
-    "result":unregister_response, "api_key": unexist_user["name"]
+    "result": unregister_response, "api_key": unexist_user["name"],
 }
 
 
@@ -252,7 +252,7 @@ class TestHandleEndpoint:
     @staticmethod
     @pytest_mark.asyncio
     async def test_add_tweet(
-        add_paths_to_os_environ: None, init_test_data_for_db: None
+        add_paths_to_os_environ: None, init_test_data_for_db: None,
     ) -> None:
         for i_data in new_tweets_to_add:
             message, status_code = await HandleEndpoint.add_tweet(
@@ -408,32 +408,32 @@ class TestHandleEndpoint:
     @pytest_mark.asyncio
     async def test_get_user_profile(init_test_data_for_db: None) -> None:
         user_profile, status_code = await HandleEndpoint.get_user_profile(
-            CORRECT_GET_USER_PROFILE_RESPONSE["profile"]["user"]["id"]
+            CORRECT_GET_USER_PROFILE_RESPONSE["profile"]["user"]["id"],
         )
         assert (user_profile ==
                 CORRECT_GET_USER_PROFILE_RESPONSE["profile"])
         assert (status_code ==
                 CORRECT_GET_USER_PROFILE_RESPONSE["status_code"])
         message, status_code = await HandleEndpoint.get_user_profile(
-            invalid_data_get_user_profile["id"]
+            invalid_data_get_user_profile["id"],
         )
         assert (message.keys() ==
-                invalid_data_get_own_profile["result"]["message"].keys())
+                invalid_data_get_user_profile["result"]["message"].keys())
         assert (message["result"] ==
-                invalid_data_get_own_profile["result"]["message"]["result"])
+                invalid_data_get_user_profile["result"]["message"]["result"])
         assert (status_code ==
-                invalid_data_get_own_profile["result"]["status_code"])
+                invalid_data_get_user_profile["result"]["status_code"])
 
     @staticmethod
     @pytest_mark.asyncio
     async def test_get_own_profile(init_test_data_for_db: None) -> None:
         own_profile, status_code = await HandleEndpoint.get_own_profile(
-            CORRECT_GET_OWN_PROFILE_RESPONSE["profile"]["user"]["name"]
+            CORRECT_GET_OWN_PROFILE_RESPONSE["profile"]["user"]["name"],
         )
         assert own_profile == CORRECT_GET_OWN_PROFILE_RESPONSE["profile"]
         assert status_code == CORRECT_GET_OWN_PROFILE_RESPONSE["status_code"]
         message, status_code = await HandleEndpoint.get_own_profile(
-            invalid_data_get_own_profile["api_key"]
+            invalid_data_get_own_profile["api_key"],
         )
         assert (message.keys() ==
                 invalid_data_get_own_profile["result"]["message"].keys())

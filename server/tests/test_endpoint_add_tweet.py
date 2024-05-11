@@ -1,3 +1,4 @@
+"""Module for testing endpoint 'add tweet' from app.routes.py ."""
 from httpx import AsyncClient
 from pytest import mark as pytest_mark
 
@@ -43,7 +44,7 @@ incorrect_tweet_body_data = {
         {"tweet_data": "str", "tweet_media_ids": [1, "number"]},
     ),
     "result": {
-        "message": ERROR_MESSAGE, "status_code": BAD_REQUEST_STATUS_CODE
+        "message": ERROR_MESSAGE, "status_code": BAD_REQUEST_STATUS_CODE,
     },
 }
 
@@ -68,8 +69,8 @@ class TestAddTweetEndpoint:
                     incorrect_tweet_body_data["result"]["message"].keys())
             assert (response_data["result"] ==
                     incorrect_tweet_body_data["result"]["message"]["result"])
-            assert isinstance(response_data.get("error_type"), str)
-            assert isinstance(response_data.get("error_message"), str)
+            assert isinstance(response_data["error_type"], str)
+            assert isinstance(response_data["error_message"], str)
 
     @staticmethod
     @pytest_mark.asyncio
