@@ -145,6 +145,11 @@ user_cannot_follow_user = (
         "followed_id": test_user_1["followed"][0]["id"],
         "result": unregister_response,
     },
+    {
+        "api_key": test_user_1["name"],
+        "followed_id": 0,  # followed user is not existed
+        "result": unregister_response,
+    },
 )
 user_can_unfollow_user = {
     "api_key": test_user_1["name"],
@@ -160,6 +165,11 @@ user_cannot_unfollow_user = (
     {
         "api_key": unexist_user["name"],
         "followed_id": test_user_1["followed"][0]["id"],
+        "result": unregister_response,
+    },
+    {
+        "api_key": test_user_1["name"],
+        "followed_id": 0,  # followed user is not existed
         "result": unregister_response,
     },
 )
