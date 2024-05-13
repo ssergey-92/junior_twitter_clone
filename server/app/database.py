@@ -1,4 +1,4 @@
-"""ORM classes for working with Project PostgreSQL database."""
+"""Model for working with Project PostgreSQL database."""
 
 from __future__ import annotations
 
@@ -40,6 +40,16 @@ from project_logger import fake_twitter_logger
 
 
 def get_async_engine() -> AsyncEngine:
+    """Get asynchronous engine.
+
+    If 'DATABASE_URL' is not set in os environ, call system exit. Then if
+    'PYTEST_ASYNC_ENGINE' is set in os environ return asynchronous engine with
+    set poolclass=NullPool else without setting poolclass.
+
+    Returns:
+        AsyncEngine : asynchronous engine
+
+    """
     db_url = os_environ.get("DATABASE_URL", None)
     fake_twitter_logger.info(f"{db_url=}")
     if db_url:
@@ -74,11 +84,21 @@ followers = Table(
 
 
 class User(Base):
+    """ORM Mapped Class User, parent class Base.
+
+    Class for creating and dealing with table 'users'.
+
+    Attributes:
+        id (Optional[int]): user id, unique identifier of user
+        name (str): username
+        followed (list[Optional[User]]): followed users
+
+    """
+
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
-    # I follow other user
     followed = relationship(
         "User",
         secondary=followers,
@@ -90,6 +110,15 @@ class User(Base):
 
     @classmethod
     async def is_existed_user_name(cls, user_name: str) -> bool:
+        """Check if username is existed.
+
+        Args:
+            user_name (str): username
+
+        Returns:
+            bool : True if user is existed else False
+
+        """
         fake_twitter_logger.info(
             f"Checking if {user_name=} is existed in table "
             f"'{cls.__tablename__}'",
@@ -104,6 +133,17 @@ class User(Base):
 
     @classmethod
     async def get_user_id_by_name(cls, user_name: str) -> Optional[int]:
+        """Get user id by username.
+
+        Returns user id if user_name is existed.
+
+        Args:
+            user_name (str): username
+
+        Returns:
+            Optional[int] : user id
+
+        """
         fake_twitter_logger.info(
             f"Get user id by {user_name=} from table '{cls.__tablename__}'",
         )
@@ -117,6 +157,12 @@ class User(Base):
 
     @classmethod
     async def add_user(cls, user_name: str) -> None:
+        """Add new user.
+
+        Args:
+            user_name (str): username
+
+        """
         fake_twitter_logger.info(
             f"Add {user_name=} in in table '{cls.__tablename__}'",
         )
@@ -126,6 +172,17 @@ class User(Base):
 
     @classmethod
     async def get_user_by_name(cls, user_name: str) -> Optional[User]:
+        """Get User by username.
+
+        Returns User if user_name is existed.
+
+        Args:
+            user_name (str): username
+
+        Returns:
+            Optional[User] : user
+
+        """
         fake_twitter_logger.info(
             f"Get full details of {user_name=} from table "
             f"'{cls.__tablename__}'",
@@ -145,6 +202,17 @@ class User(Base):
 
     @classmethod
     async def get_user_by_id(cls, user_id: int) -> Optional[User]:
+        """Get User by user id.
+
+        Returns User if user_id is existed.
+
+        Args:
+            user_id (int): user id
+
+        Returns:
+            Optional[User] : user
+
+        """
         fake_twitter_logger.info(
             f"Get full details of {user_id=} from table "
             f"'{cls.__tablename__}'",
@@ -166,6 +234,18 @@ class User(Base):
     async def follow_other_user(
         follower_id: int, followed_id: int,
     ) -> Optional[Row]:
+        """Add followed user.
+
+        Return user and followed user ids if added successfully.
+
+        Args:
+            follower_id (int): user id
+            followed_id (int): followed user id
+
+        Returns:
+            Optional[Row] : user and followed user ids
+
+        """
         fake_twitter_logger.info(
             f"Add {follower_id=} follow {followed_id=} in table "
             f"'{followers.name}'",
@@ -192,6 +272,18 @@ class User(Base):
     async def unfollow_user(
         follower_id: int, followed_id: int,
     ) -> Optional[Row]:
+        """Unfollow user.
+
+        Return user and followed user ids if entry removed successfully.
+
+        Args:
+            follower_id (int): user id
+            followed_id (int): followed user id
+
+        Returns:
+            Optional[Row] : user and followed user ids
+
+        """
         fake_twitter_logger.info(
             f"Delete {follower_id=} follow {followed_id=} in table "
             f"'{followers.name}'",
@@ -214,6 +306,17 @@ class User(Base):
 
     @classmethod
     async def get_total_followed_by_name(cls, user_name: str) -> Optional[int]:
+        """Get total followed users for user with name 'user_name'.
+
+        Return total followed users if user is existed.
+
+        Args:
+            user_name (str): user id
+
+        Returns:
+            Optional[Row] :  total followed users
+
+        """
         fake_twitter_logger.info(
             f"Get total followed users by name {user_name=} "
             f"from table '{cls.__tablename__}'",
@@ -228,6 +331,19 @@ class User(Base):
 
 
 class TweetLike(Base):
+    """ORM Mapped Class TweetLike, parent class Base.
+
+    Class for creating and dealing with table 'tweets_likes'. Represent data
+    about 'likes' of the tweet.
+
+    Attributes:
+        id (Optional[int]): like id, unique identifier of like
+        tweet_id (int): liked tweet id
+        user_name (str): name of user how liked tweet
+        user_details (User): user details how liked tweet
+
+    """
+
     __tablename__ = "tweets_likes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -254,6 +370,18 @@ class TweetLike(Base):
 
     @classmethod
     async def like_tweet(cls, user_name: str, tweet_id: int) -> Optional[int]:
+        """Like tweet by tweet id.
+
+        Return like id if details of tweet like inserted successfully.
+
+        Args:
+            user_name (str): username who liked tweet
+            tweet_id (int): id of tweet
+
+        Returns:
+            Optional[int] : like id
+
+        """
         fake_twitter_logger.info(f"Like {tweet_id=} by {user_name=}")
         async with async_session() as session:
             async with session.begin():
@@ -275,6 +403,18 @@ class TweetLike(Base):
     async def dislike_tweet(
         cls, user_name: str, tweet_id: int,
     ) -> Optional[int]:
+        """Dislike tweet by tweet id.
+
+        Return like id if details of tweet like removed successfully.
+
+        Args:
+            user_name (str): username who liked tweet
+            tweet_id (int): id of tweet
+
+        Returns:
+            Optional[int] : like id
+
+        """
         async with async_session() as session:
             async with session.begin():
                 delete_query = await session.execute(
@@ -289,6 +429,12 @@ class TweetLike(Base):
 
     @classmethod
     async def get_total_likes(cls) -> Optional[int]:
+        """Get total likes from table.
+
+        Returns:
+            Optional[int] : total likes from table
+
+        """
         fake_twitter_logger.info(
             f"Get total likes from table '{cls.__tablename__}'",
         )
@@ -302,6 +448,17 @@ class TweetLike(Base):
 
 
 class MediaFile(Base):
+    """ORM Mapped Class MediaFile, parent class Base.
+
+    Class for creating and dealing with table 'media_files'.
+
+    Attributes:
+        id (Optional[int]): media file id, unique identifier
+        file_name (str): media file name
+        user_name (str): name of user hom belongs media file
+
+    """
+
     __tablename__ = "media_files"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -314,6 +471,18 @@ class MediaFile(Base):
     async def add_media_file(
         cls, user_name: str, file_name: str,
     ) -> Optional[int]:
+        """Add media file.
+
+        Return media file id if added successfully.
+
+        Args:
+            user_name (str): username hom belongs file
+            file_name (str): name of media file
+
+        Returns:
+            Optional[int] : media file id
+
+        """
         fake_twitter_logger.info(
             f"Add {file_name=}, {user_name=} in table '{cls.__tablename__}'",
         )
@@ -330,6 +499,12 @@ class MediaFile(Base):
 
     @classmethod
     async def get_total_media_files(cls) -> Optional[int]:
+        """Get total number of media files.
+
+        Returns:
+            Optional[int] : total number of media files
+
+        """
         fake_twitter_logger.info(
             f"Get total media files from table '{cls.__tablename__}'",
         )
@@ -345,6 +520,15 @@ class MediaFile(Base):
     async def get_media_files_names(
         cls, ids_list: Union[list, Column],
     ) -> list:
+        """Get media files names by their ids.
+
+        Args:
+            ids_list (Union[list, Column]): media files ids
+
+        Returns:
+            list : media files names
+
+        """
         fake_twitter_logger.info(f"Get media file names for {ids_list=}")
         async with async_session() as session:
             select_query = await session.execute(
@@ -359,6 +543,16 @@ class MediaFile(Base):
     async def bulk_delete(
         cls, user_name: str, files_ids: list,
     ) -> list[Optional[str]]:
+        """Delete media files names by their ids.
+
+        Args:
+            user_name (str): name of user hom belongs files
+            files_ids (list): media files ids
+
+        Returns:
+            list : media files names
+
+        """
         fake_twitter_logger.info(
             f"Deleting media file {files_ids=} belong to {user_name=} "
             f"from table '{cls.__tablename__}'",
@@ -376,6 +570,20 @@ class MediaFile(Base):
 
 
 class Tweet(Base):
+    """ORM Mapped Class Tweet, parent class Base.
+
+    Class for creating and dealing with table 'tweets'.
+
+    Attributes:
+        id (Optional[int]): tweet id, unique identifier
+        author_name (str): tweet author name
+        tweet_data (str): tweet message
+        tweet_media_ids (Optional[list[int]]): media ids belongs to tweet
+        author (User): tweet author details
+        likes(Union[list[TweetLike], list]): details of likes for the tweet
+
+    """
+
     __tablename__ = "tweets"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -402,6 +610,19 @@ class Tweet(Base):
         tweet_data: str,
         tweet_media_ids: Optional[list[int]] = None,
     ) -> Optional[int]:
+        """Add tweet.
+
+        Return tweet id if added successfully.
+
+        Args:
+            author_name (str): tweet author name
+            tweet_data (str): tweet message
+            tweet_media_ids (Optional[list[int]]=None): media ids for tweet
+
+        Returns:
+            Optional[int] : tweet id
+
+        """
         fake_twitter_logger.info(
             f"Adding {tweet_data=}, {tweet_media_ids=}, {author_name=}"
             f"in table '{cls.__tablename__}'",
@@ -425,6 +646,18 @@ class Tweet(Base):
     async def delete_tweet(
         cls, author_name: str, tweet_id: int,
     ) -> Optional[Row]:
+        """Delete tweet by tweet id.
+
+        Return tweet data and media ids if removed successfully.
+
+        Args:
+            author_name (str): tweet author name
+            tweet_id (int): tweet id
+
+        Returns:
+            Optional[int] : tweet data and media ids
+
+        """
         fake_twitter_logger.info(
             f"Deleting {tweet_id=} by {author_name=} from table "
             f"'{cls.__tablename__}'",
@@ -442,6 +675,12 @@ class Tweet(Base):
 
     @classmethod
     async def get_total_tweets(cls) -> Optional[int]:
+        """Get total number of tweets.
+
+        Returns:
+            Optional[int] : total number of tweets
+
+        """
         fake_twitter_logger.info(
             f"Get total tweets from table '{cls.__tablename__}'",
         )
@@ -455,25 +694,34 @@ class Tweet(Base):
 
     # @classmethod
     # async def get_tweets_by_author_sorted_by_likes(
-    #   cls, followed_names: list
-    #   )  -> list[Optional[Tweet]]:
+    #     cls, followed_names: list[str],
+    # ) -> list[Optional[Tweet]]:
+    #     """Get all tweets of users 'followed_names' sorted descending by
+    #     likes.
+    #
+    #     Args:
+    #         followed_names: user's names to get tweets
+    #
+    #     Returns:
+    #         list[Tweet] : tweets
+    #
+    #     """
     #     fake_twitter_logger.info(
     #         f"Get tweets for {followed_names=} and sort them descending "
-    #         f"by likes from table '{cls.__tablename__}'"
+    #         f"by likes from table '{cls.__tablename__}'",
     #     )
     #     async with async_session() as session:
     #         select_query = await session.execute(
-    #             select(cls)
-    #             .where(cls.author_name.in_(followed_names))
-    #             .outerjoin(TweetLike, cls.id == TweetLike.tweet_id)
-    #             .order_by(desc(func.count(TweetLike.id)))
-    #             .group_by(cls.id)
-    #             .options(
+    #             select(cls).
+    #             where(cls.author_name.in_(followed_names)).
+    #             outerjoin(TweetLike, cls.id == TweetLike.tweet_id).
+    #             order_by(desc(func.count(TweetLike.id))).
+    #             group_by(cls.id).
+    #             options(
     #                 joinedload(cls.author),
-    #                 joinedload(cls.likes)
-    #                 .options(joinedload(TweetLike.user_details)
-    #                          )
-    #             )
+    #                 joinedload(cls.likes).
+    #                 options(joinedload(TweetLike.user_details)),
+    #             ),
     #         )
     #         user_tweets = select_query.unique().scalars().all()
     #     fake_twitter_logger.info(f"{user_tweets=}")
@@ -481,6 +729,12 @@ class Tweet(Base):
 
     @classmethod
     async def get_all_tweets_sorted_by_likes(cls) -> list[Tweet]:
+        """Get all tweets sorted descending by likes.
+
+        Returns:
+            list[Tweet] : all tweets
+
+        """
         fake_twitter_logger.info(
             f"Get all tweets sorted descending by likes"
             f" from table '{cls.__tablename__}'",
@@ -504,10 +758,8 @@ class Tweet(Base):
 
 
 async def create_tables() -> None:
-    """Create tables in db."""
+    """Create tables which are not existed in db."""
     async with async_engine.begin() as conn:
-        # fake_twitter_logger.info("Dropping all table in db")
-        # await conn.run_sync(Base.metadata.drop_all)
         fake_twitter_logger.info(
             "Creating tables which are not existed in db.",
         )
