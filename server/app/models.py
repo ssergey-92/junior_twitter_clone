@@ -1,4 +1,4 @@
-"""Model for handling application endpoints."""
+"""Module for handling application endpoints."""
 from datetime import datetime
 from os import environ as os_environ
 from os import path as os_path

@@ -1,4 +1,4 @@
-"""Model for working with Project PostgreSQL database."""
+"""Module for working with project PostgreSQL database."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ from sqlalchemy.pool import NullPool
 
 from project_logger import fake_twitter_logger
 
-
+os_environ["DATABASE_URL"] = "postgresql+asyncpg://admin:admin@db:5432/fake_twitter"
 def get_async_engine() -> AsyncEngine:
     """Get asynchronous engine.
 

@@ -50,9 +50,10 @@ async def get_fake_twitter_app() -> FastAPI:
 
         """
         fake_twitter_logger.info("Started lifespan")
-        await init_db()
+
+        # await init_db()
         yield
-        await close_db_connection()
+        # await close_db_connection()
 
     app = FastAPI(title="fake_twitter", lifespan=lifespan)
 
@@ -93,6 +94,7 @@ async def get_fake_twitter_app() -> FastAPI:
 
         Returns:
             JSONResponse: custom user's response
+
         """
         fake_twitter_logger.info(f"Caught exception: {exc}")
         return JSONResponse(
@@ -118,6 +120,7 @@ async def get_fake_twitter_app() -> FastAPI:
 
         Returns:
             JSONResponse: custom user's response
+
         """
         fake_twitter_logger.info(f"Caught exception: {exc}")
         return JSONResponse(
@@ -145,6 +148,20 @@ async def get_fake_twitter_app() -> FastAPI:
         api_key: Annotated[str, Header()],
         response: Response,
     ) -> Union[AddTweetOut, ErrorResponse]:
+        """Endpoint for adding new tweet.
+
+        Call handler, then set http status code and return response.
+
+        Args:
+            new_tweet (AddTweetIn): tweet details
+            api_key (str): author of tweet
+            response (Response): fastapi response model for endpoint
+
+        Returns:
+            Union[AddTweetOut, ErrorResponse]: success adding tweet or
+                error message with corresponding http status code.
+
+        """
         fake_twitter_logger.info(f"{api_key=} | {new_tweet=}")
         details, http_code = await HandleEndpoint.add_tweet(api_key, new_tweet)
         fake_twitter_logger.info(f"{details=}, {http_code=}")
@@ -165,6 +182,20 @@ async def get_fake_twitter_app() -> FastAPI:
         api_key: Annotated[str, Header()],
         response: Response,
     ) -> Union[AddMediaOut, ErrorResponse]:
+        """Endpoint for adding media file.
+
+        Call handler, then set http status code and return response.
+
+        Args:
+            file (UploadFile): media file
+            api_key (str): username who adding media_file
+            response (Response): fastapi response model for endpoint
+
+        Returns:
+            Union[AddMediaOut, ErrorResponse]: success adding media or
+                error message with corresponding http status code.
+
+        """
         fake_twitter_logger.info(f"{api_key=}, {file.filename=}")
         details, http_code = await HandleEndpoint.add_media_file(
             api_key, file,
@@ -188,6 +219,20 @@ async def get_fake_twitter_app() -> FastAPI:
     async def delete_tweet(
         id: int, api_key: Annotated[str, Header()], response: Response,
     ) -> Union[SuccessResponse, ErrorResponse]:
+        """Endpoint for deleting tweet.
+
+        Call handler, then set http status code and return response.
+
+        Args:
+            id (int): tweet id
+            api_key (str): username who wants to delete tweet
+            response (Response): fastapi response model for endpoint
+
+        Returns:
+            Union[SuccessResponse, ErrorResponse]: success deleting tweet or
+                error message with corresponding http status code.
+
+        """
         fake_twitter_logger.info(f"{api_key=} | {id=}")
         error_msg, http_code = await HandleEndpoint.delete_tweet(
             api_key, id,
@@ -210,6 +255,20 @@ async def get_fake_twitter_app() -> FastAPI:
     async def like_tweet_by_id(
         id: int, api_key: Annotated[str, Header()], response: Response,
     ) -> Union[SuccessResponse, ErrorResponse]:
+        """Endpoint to like tweet by its id.
+
+        Call handler, then set http status code and return response.
+
+        Args:
+            id (int): tweet id
+            api_key (str): username who liking tweet
+            response (Response): fastapi response model for endpoint
+
+        Returns:
+            Union[SuccessResponse, ErrorResponse]: success like tweet or error
+                message with corresponding http status code.
+
+        """
         fake_twitter_logger.info(f"{api_key=} | {id=}")
         error_msg, http_code = await HandleEndpoint.like_tweet_by_id(
             api_key, id,
@@ -232,6 +291,20 @@ async def get_fake_twitter_app() -> FastAPI:
     async def dislike_tweet_by_id(
         id: int, api_key: Annotated[str, Header()], response: Response,
     ) -> Union[SuccessResponse, ErrorResponse]:
+        """Endpoint to dislike tweet by its id.
+
+        Call handler, then set http status code and return response.
+
+        Args:
+            id (int): tweet id
+            api_key (str): username who disliking tweet
+            response (Response): fastapi response model for endpoint
+
+        Returns:
+            Union[SuccessResponse, ErrorResponse]: success dislike tweet or
+                error message with corresponding http status code.
+
+        """
         fake_twitter_logger.info(f"{api_key=} | {id=}")
         error_msg, http_code = await HandleEndpoint.dislike_tweet_by_id(
             api_key, id,
@@ -254,6 +327,20 @@ async def get_fake_twitter_app() -> FastAPI:
     async def follow_other_user(
         id: int, api_key: Annotated[str, Header()], response: Response,
     ) -> Union[SuccessResponse, ErrorResponse]:
+        """Endpoint for adding followed user 'id' to user 'api_key'.
+
+        Call handler, then set http status code and return response.
+
+        Args:
+            id (int): followed user id
+            api_key (str): username whom to add followed user
+            response (Response): fastapi response model for endpoint
+
+        Returns:
+            Union[SuccessResponse, ErrorResponse]: success adding followed user
+                or error message with corresponding http status code.
+
+        """
         fake_twitter_logger.info(f"{api_key=} | {id=}")
         error_msg, http_code = await HandleEndpoint.follow_other_user(
             api_key, id,
@@ -276,6 +363,20 @@ async def get_fake_twitter_app() -> FastAPI:
     async def unfollow_user(
         id: int, api_key: Annotated[str, Header()], response: Response,
     ) -> Union[SuccessResponse, ErrorResponse]:
+        """Endpoint to unfollow user 'id' for user 'api_key'.
+
+        Call handler, then set http status code and return response.
+
+        Args:
+            id (int): followed user id
+            api_key (str): username who wants to unfollow
+            response (Response): fastapi response model for endpoint
+
+        Returns:
+            Union[SuccessResponse, ErrorResponse]: success unfollow user or
+                error message with corresponding http status code.
+
+        """
         fake_twitter_logger.info(f"{api_key=} | {id=}")
         error_msg, http_code = await HandleEndpoint.unfollow_user(
             api_key, id,
@@ -297,6 +398,19 @@ async def get_fake_twitter_app() -> FastAPI:
     async def get_tweet_feed(
         api_key: Annotated[str, Header()], response: Response,
     ) -> Union[TweetFeedOut, ErrorResponse]:
+        """Endpoint to get full tweet feed.
+
+        Call handler, then set http status code and return response.
+
+        Args:
+            api_key (str): username who request full tweet feed
+            response (Response): fastapi response model for endpoint
+
+        Returns:
+            Union[TweetFeedOut, ErrorResponse]: success get tweet feeed or
+                error message with corresponding http status code.
+
+        """
         fake_twitter_logger.info(f"{api_key=}")
         # data, http_code = await HandleEndpoint.get_user_tweet_feed(api_key)
         tweet_feed, http_code = await HandleEndpoint.get_full_tweet_feed()
@@ -316,6 +430,19 @@ async def get_fake_twitter_app() -> FastAPI:
     async def get_own_profile_details(
         api_key: Annotated[str, Header()], response: Response,
     ) -> Union[UserProfileDetailsOut, ErrorResponse]:
+        """Endpoint to get own profile.
+
+        Call handler, then set http status code and return response.
+
+        Args:
+            api_key (str): username who request own profile
+            response (Response): fastapi response model for endpoint
+
+        Returns:
+            Union[UserProfileDetailsOut, ErrorResponse]: success get own
+            profile or error message with corresponding http status code.
+
+        """
         fake_twitter_logger.info(f"{api_key=}")
         details, http_code = await HandleEndpoint.get_own_profile(
             api_key,
@@ -338,6 +465,20 @@ async def get_fake_twitter_app() -> FastAPI:
     async def get_user_profile_details(
         id: int, api_key: Annotated[str, Header()], response: Response,
     ) -> Union[UserProfileDetailsOut, ErrorResponse]:
+        """Endpoint to get user profile.
+
+        Call handler, then set http status code and return response.
+
+        Args:
+            id (int): user id whose profile is required
+            api_key (str): username who requests user profile
+            response (Response): fastapi response model for endpoint
+
+        Returns:
+            Union[UserProfileDetailsOut, ErrorResponse]: success get user
+            profile or error message with corresponding http status code.
+
+        """
         fake_twitter_logger.info(f"{api_key=}")
         details, http_code = await HandleEndpoint.get_user_profile(id)
         fake_twitter_logger.info(f"{details=}, {http_code=}")

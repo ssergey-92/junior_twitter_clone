@@ -1,4 +1,4 @@
-"""Project logger."""
+"""Module which contain project logger."""
 
 from logging import DEBUG, Formatter, Logger, StreamHandler, getLogger
 
