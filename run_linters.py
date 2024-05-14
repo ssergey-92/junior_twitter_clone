@@ -11,7 +11,7 @@ if __name__ == "__main__":
         args="pip install -r server/dev_requirements.txt && "
         "echo ===================================================;"
         "echo Starting wemake-python-styleguide;"
-        "flake8 main.py run_pytests.py run_linters.py server/app;"
+        "flake8 main.py run_pytests.py run_linters.py Readme.md server/app;"
         "echo ===================================================;"
         "echo Starting mypy;"
         "cd server/app &&"
