@@ -1,0 +1,709 @@
+openapi: 3.1.0
+info:
+  title: junior_twitter_clone
+  version: 0.1.0
+servers:
+  - url: 'http:localhost/'
+paths:
+  /api/tweets:
+    post:
+      summary: Add Tweet
+      description: Add tweet
+      operationId: add_tweet_api_tweets_post
+      parameters:
+        - name: api-key
+          in: header
+          required: true
+          schema:
+            type: string
+            title: Api-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddTweetIn'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddTweetOut'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: Get Tweet Feed
+      description: Tweet feed for user
+      operationId: get_tweet_feed_api_tweets_get
+      parameters:
+        - name: api-key
+          in: header
+          required: true
+          schema:
+            type: string
+            title: Api-Key
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TweetFeedOut'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/medias:
+    post:
+      summary: Add Media File
+      description: Add media file
+      operationId: add_media_file_api_medias_post
+      parameters:
+        - name: api-key
+          in: header
+          required: true
+          schema:
+            type: string
+            title: Api-Key
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddMediaFileFormIn'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddMediaOut'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/tweets/{id}:
+    delete:
+      summary: Delete Tweet
+      description: Delete tweet by id
+      operationId: delete_tweet_api_tweets__id__delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Id
+        - name: api-key
+          in: header
+          required: true
+          schema:
+            type: string
+            title: Api-Key
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/tweets/{id}/likes:
+    post:
+      summary: Like Tweet By Id
+      description: Like tweet by id
+      operationId: like_tweet_by_id_api_tweets__id__likes_post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Id
+        - name: api-key
+          in: header
+          required: true
+          schema:
+            type: string
+            title: Api-Key
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Dislike Tweet By Id
+      description: Dislike tweet by id
+      operationId: dislike_tweet_by_id_api_tweets__id__likes_delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Id
+        - name: api-key
+          in: header
+          required: true
+          schema:
+            type: string
+            title: Api-Key
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/users/{id}/follow:
+    post:
+      summary: Follow Other User
+      description: Follow user by id
+      operationId: follow_other_user_api_users__id__follow_post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Id
+        - name: api-key
+          in: header
+          required: true
+          schema:
+            type: string
+            title: Api-Key
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Unfollow User
+      description: Unsubscribe from user by id
+      operationId: unfollow_user_api_users__id__follow_delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Id
+        - name: api-key
+          in: header
+          required: true
+          schema:
+            type: string
+            title: Api-Key
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/users/me:
+    get:
+      summary: Get Own Profile Details
+      description: User own profile details
+      operationId: get_own_profile_details_api_users_me_get
+      parameters:
+        - name: api-key
+          in: header
+          required: true
+          schema:
+            type: string
+            title: Api-Key
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileDetailsOut'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/users/{id}:
+    get:
+      summary: Get User Profile Details
+      description: Get user profile details by id
+      operationId: get_user_profile_details_api_users__id__get
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Id
+        - name: api-key
+          in: header
+          required: true
+          schema:
+            type: string
+            title: Api-Key
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileDetailsOut'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    AddMediaOut:
+      properties:
+        result:
+          const: true
+          title: Result
+          default: true
+        media_id:
+          type: integer
+          title: Media Id
+      type: object
+      required:
+        - media_id
+      title: AddMediaOut
+      description: |-
+        Class  AddMediaOut, parent class SuccessResponse.
+
+        Class for validation success response body for endpoint: 'add_media'.
+
+        Attributes:
+             media_id (int): media file id
+    AddTweetIn:
+      properties:
+        tweet_data:
+          type: string
+          title: Tweet Data
+        tweet_media_ids:
+          anyOf:
+            - items:
+                type: integer
+              type: array
+            - type: 'null'
+          title: Tweet Media Ids
+      type: object
+      required:
+        - tweet_data
+      title: AddTweetIn
+      description: |-
+        Class  AddTweetIn, parent class BaseModel.
+
+        Class for validation request body of endpoint 'add_tweet'.
+
+        Attributes:
+            tweet_data (str): tweet message
+            tweet_media_ids (Optional[list[int]]=None): media ids belongs to tweet
+    AddTweetOut:
+      properties:
+        result:
+          const: true
+          title: Result
+          default: true
+        tweet_id:
+          type: integer
+          title: Tweet Id
+      type: object
+      required:
+        - tweet_id
+      title: AddTweetOut
+      description: |-
+        Class  AddTweetOut, parent class SuccessResponse.
+
+        Class for validation response body of endpoint 'add_tweet'.
+
+        Attributes:
+            tweet_id (int): tweet id
+    AddMediaFileFormIn:
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+      type: object
+      required:
+        - file
+      title: AddMediaFileFormIn
+    ErrorResponse:
+      properties:
+        result:
+          const: false
+          title: Result
+          default: false
+        error_type:
+          type: string
+          title: Error Type
+        error_message:
+          type: string
+          title: Error Message
+      type: object
+      required:
+        - error_type
+        - error_message
+      title: ErrorResponse
+      description: |-
+        Class ErrorResponse, parent class BaseModel.
+
+        Class for validation response body with error message.
+
+        Attributes:
+            result (Literal[False]=False): unsuccessful result.
+            error_type (str): type of error
+            error_message (str):error description message
+    SuccessResponse:
+      properties:
+        result:
+          const: true
+          title: Result
+          default: true
+      type: object
+      title: SuccessResponse
+      description: |-
+        Class SuccessResponse, parent class BaseModel.
+
+        Class represent of common part of success response model for application
+        endpoints.
+
+        Attributes:
+            result (Literal[True]=True): success result.
+    TweetFeedOut:
+      properties:
+        result:
+          const: true
+          title: Result
+          default: true
+        tweets:
+          items:
+            anyOf:
+              - $ref: '#/components/schemas/TweetFullDetails'
+              - type: 'null'
+          type: array
+          title: Tweets
+      type: object
+      required:
+        - tweets
+      title: TweetFeedOut
+      description: |-
+        Class TweetFeedOut, parent class SuccessResponse.
+
+        Class for validation success response body for 'get_tweet_fee' endpoint.
+
+        Attributes:
+            tweets (List[Optional[TweetFullDetails]]): tweets details
+    TweetFullDetails:
+      properties:
+        id:
+          type: integer
+          title: Id
+        content:
+          type: string
+          title: Content
+        attachments:
+          items:
+            anyOf:
+              - type: string
+              - type: 'null'
+          type: array
+          title: Attachments
+        author:
+          $ref: '#/components/schemas/UserShortDetails'
+        likes:
+          items:
+            anyOf:
+              - $ref: '#/components/schemas/TweetLikeShortDetails'
+              - type: 'null'
+          type: array
+          title: Likes
+      type: object
+      required:
+        - id
+        - content
+        - attachments
+        - author
+        - likes
+      title: TweetFullDetails
+      description: |-
+        Class TweetFullDetails, parent class BaseModel.
+
+        Class for validation tweet details for different validation classes
+        TweetFeedOut.
+
+        Attributes:
+            id (int): tweet id
+            content (str): tweet message
+            attachments: List[Optional[str]]: file media names belongs to tweet
+            author (UserShortDetails): tweet author details
+            likes: List[Optional[TweetLikeShortDetails]]: likes details
+    TweetLikeShortDetails:
+      properties:
+        user_id:
+          type: integer
+          title: User Id
+        name:
+          type: string
+          title: Name
+      type: object
+      required:
+        - user_id
+        - name
+      title: TweetLikeShortDetails
+      description: |-
+        Class TweetLikeShortDetails, parent class BaseModel.
+
+        Class for validation short details of tweet like details for validation
+        class TweetFullDetails.
+
+        Attributes:
+            user_id (int): user id who liked tweet
+            name (str): username who liked tweet
+    UserDetails:
+      properties:
+        id:
+          type: integer
+          title: Id
+        name:
+          type: string
+          title: Name
+        followers:
+          items:
+            anyOf:
+              - $ref: '#/components/schemas/UserShortDetails'
+              - type: 'null'
+          type: array
+          title: Followers
+        following:
+          items:
+            anyOf:
+              - $ref: '#/components/schemas/UserShortDetails'
+              - type: 'null'
+          type: array
+          title: Following
+      type: object
+      required:
+        - id
+        - name
+        - followers
+        - following
+      title: UserDetails
+      description: |-
+        Class UserDetails, parent class UserShortDetails.
+
+        Class for validation user of validation class UserProfileDetailsOut
+
+        Attributes:
+            followers (List[Optional[UserShortDetails]]): user followers details
+            following (List[Optional[UserShortDetails]]): user followed details
+    UserProfileDetailsOut:
+      properties:
+        result:
+          const: true
+          title: Result
+          default: true
+        user:
+          $ref: '#/components/schemas/UserDetails'
+      type: object
+      required:
+        - user
+      title: UserProfileDetailsOut
+      description: |-
+        Class UserProfileDetailsOut, parent class SuccessResponse.
+
+        Class for validation success response body for endpoints:
+        'get_own_profile_details' and 'get_user_profile_details'.
+
+        Attributes:
+             user (UserDetails): user details
+    UserShortDetails:
+      properties:
+        id:
+          type: integer
+          title: Id
+        name:
+          type: string
+          title: Name
+      type: object
+      required:
+        - id
+        - name
+      title: UserShortDetails
+      description: |-
+        Class UserShortDetails, parent class BaseModel.
+
+        Class for validation user short details for different validation classes
+
+        Attributes:
+            id (int): user id
+            name (str): username
+
