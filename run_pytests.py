@@ -1,4 +1,8 @@
-"""Start pytest for project 'Junior Twitter Clone'."""
+"""Start tests for application 'Junior Twitter Clone'.
+
+Install libraries for development from server/prod_requirements.txt than start
+pytests from server/tests
+"""
 from subprocess import Popen as subprocess_Popen
 from subprocess import run as subprocess_run
 from time import sleep
@@ -10,7 +14,8 @@ if __name__ == "__main__":
     )
     sleep(2)  # time to create the container with test_db
     subprocess_run(
-        args="timeout 15s docker exec test_postgresql sh -c 'pg_isready' && "
+        args="pip install -r server/dev_requirements.txt && "
+        "timeout 15s docker exec test_postgresql sh -c 'pg_isready' && "
         "pytest --cov-report term-missing --cov=server/app server/tests -v ;"
         "cd server/tests && "
         "docker compose stop && "
