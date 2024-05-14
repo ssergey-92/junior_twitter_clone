@@ -9,6 +9,6 @@ services:
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=test_for_fake_twitter
+      - POSTGRES_DB=test_for_junior_twitter_clone
     ports:
       - '6000:5432'

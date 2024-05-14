@@ -1,4 +1,4 @@
-"""Module for creating FastAPI application 'Fake Twitter'."""
+"""Module for creating FastAPI application 'Junior Twitter Clone'."""
 
 from asyncio import run as async_run
 from contextlib import asynccontextmanager
@@ -14,7 +14,7 @@ from typing_extensions import AsyncGenerator
 
 from database import User, close_db_connection, init_db
 from models import HandleEndpoint
-from project_logger import fake_twitter_logger
+from project_logger import project_logger
 from schemas import (
     AddMediaOut,
     AddTweetIn,
@@ -25,6 +25,12 @@ from schemas import (
     UserProfileDetailsOut,
 )
 
+open_api_urls = (
+    "http://localhost/docs",
+    "http://127.0.0.1/docs",
+    "http://localhost/openapi.json",
+    "http://127.0.0.1/openapi.json",
+)
 unauthorized_message = {
     "result": False,
     "error_type": "Unauthorized",
@@ -32,8 +38,8 @@ unauthorized_message = {
 }
 
 
-async def get_fake_twitter_app() -> FastAPI:
-    """Create FastAPI application 'Fake Twitter'.
+async def get_junior_twitter_clone() -> FastAPI:
+    """Create FastAPI application 'Junior Twitter Clone'.
 
     Returns:
         FastAPI: application
@@ -49,13 +55,12 @@ async def get_fake_twitter_app() -> FastAPI:
             AsyncGenerator: asynchronous generator
 
         """
-        fake_twitter_logger.info("Started lifespan")
-
-        # await init_db()
+        project_logger.info("Started lifespan")
+        await init_db()
         yield
-        # await close_db_connection()
+        await close_db_connection()
 
-    app = FastAPI(title="fake_twitter", lifespan=lifespan)
+    app = FastAPI(title="junior_twitter_clone", lifespan=lifespan)
 
     @app.middleware("http")
     async def intercept_request(
@@ -63,8 +68,9 @@ async def get_fake_twitter_app() -> FastAPI:
     ) -> Response:
         """Middleware for catching all incoming requests.
 
-        Check that request headers contain 'api-key' header and  its has
-        permission to access the application.
+        Grant permission to access the application if request url in
+        'open_api_urls' or request contain header 'api-key' which is register
+        in db, table 'users'. Else return response with error details.
 
         Args:
             request (Request): incoming request
@@ -75,11 +81,15 @@ async def get_fake_twitter_app() -> FastAPI:
 
         """
         api_key = request.headers.get("api-key")
-        fake_twitter_logger.info(f"Checking permission for user: {api_key=}")
-        if api_key and await User.is_existed_user_name(api_key):
-            fake_twitter_logger.info("Access granted!")
+        request_url = request.url
+        project_logger.info(f"Checking permission: {request.url=}, {api_key=}")
+        if (
+            request_url in open_api_urls or
+            (api_key and await User.is_existed_user_name(api_key))
+        ):
+            project_logger.info("Access granted!")
             return await call_next(request)
-        fake_twitter_logger.info("Access denied!")
+        project_logger.info("Access denied!")
         return JSONResponse(content=unauthorized_message, status_code=401)
 
     @app.exception_handler(StarletteHTTPException)
@@ -96,7 +106,7 @@ async def get_fake_twitter_app() -> FastAPI:
             JSONResponse: custom user's response
 
         """
-        fake_twitter_logger.info(f"Caught exception: {exc}")
+        project_logger.info(f"Caught exception: {exc}")
         return JSONResponse(
             content=jsonable_encoder(
                 {
@@ -122,7 +132,7 @@ async def get_fake_twitter_app() -> FastAPI:
             JSONResponse: custom user's response
 
         """
-        fake_twitter_logger.info(f"Caught exception: {exc}")
+        project_logger.info(f"Caught exception: {exc}")
         return JSONResponse(
             content=jsonable_encoder(
                 {
@@ -141,6 +151,7 @@ async def get_fake_twitter_app() -> FastAPI:
             201: {"description": "Created", "model": AddTweetOut},
             400: {"description": "Bad Request", "model": ErrorResponse},
             401: {"description": "Unauthorized", "model": ErrorResponse},
+            422: {"description": "Validation Error", "model": ErrorResponse},
         },
     )
     async def add_tweet(
@@ -162,9 +173,9 @@ async def get_fake_twitter_app() -> FastAPI:
                 error message with corresponding http status code.
 
         """
-        fake_twitter_logger.info(f"{api_key=} | {new_tweet=}")
+        project_logger.info(f"{api_key=} | {new_tweet=}")
         details, http_code = await HandleEndpoint.add_tweet(api_key, new_tweet)
-        fake_twitter_logger.info(f"{details=}, {http_code=}")
+        project_logger.info(f"{details=}, {http_code=}")
         response.status_code = http_code
         return AddTweetOut(**details)
 
@@ -175,6 +186,7 @@ async def get_fake_twitter_app() -> FastAPI:
             201: {"description": "Created", "model": AddMediaOut},
             400: {"description": "Bad Request", "model": ErrorResponse},
             401: {"description": "Unauthorized", "model": ErrorResponse},
+            422: {"description": "Validation Error", "model": ErrorResponse},
         },
     )
     async def add_media_file(
@@ -196,11 +208,11 @@ async def get_fake_twitter_app() -> FastAPI:
                 error message with corresponding http status code.
 
         """
-        fake_twitter_logger.info(f"{api_key=}, {file.filename=}")
+        project_logger.info(f"{api_key=}, {file.filename=}")
         details, http_code = await HandleEndpoint.add_media_file(
             api_key, file,
         )
-        fake_twitter_logger.info(f"{details=}, {http_code=}")
+        project_logger.info(f"{details=}, {http_code=}")
         response.status_code = http_code
         if http_code == 201:
             return AddMediaOut(**details)
@@ -210,10 +222,11 @@ async def get_fake_twitter_app() -> FastAPI:
         path="/api/tweets/{id}",
         description="Delete tweet by id",
         responses={
-            200: {"description": "OK", "model": SuccessResponse},
+            201: {"description": "Created", "model": SuccessResponse},
             400: {"description": "Bad Request", "model": ErrorResponse},
             401: {"description": "Unauthorized", "model": ErrorResponse},
             403: {"description": "Forbidden", "model": ErrorResponse},
+            422: {"description": "Validation Error", "model": ErrorResponse},
         },
     )
     async def delete_tweet(
@@ -233,11 +246,11 @@ async def get_fake_twitter_app() -> FastAPI:
                 error message with corresponding http status code.
 
         """
-        fake_twitter_logger.info(f"{api_key=} | {id=}")
+        project_logger.info(f"{api_key=} | {id=}")
         error_msg, http_code = await HandleEndpoint.delete_tweet(
             api_key, id,
         )
-        fake_twitter_logger.info(f"{error_msg=}, {http_code=}")
+        project_logger.info(f"{error_msg=}, {http_code=}")
         response.status_code = http_code
         if error_msg:
             return ErrorResponse(**error_msg)
@@ -247,9 +260,10 @@ async def get_fake_twitter_app() -> FastAPI:
         path="/api/tweets/{id}/likes",
         description="Like tweet by id",
         responses={
-            201: {"description": "OK", "model": SuccessResponse},
+            201: {"description": "Created", "model": SuccessResponse},
             400: {"description": "Bad Request", "model": ErrorResponse},
             401: {"description": "Unauthorized", "model": ErrorResponse},
+            422: {"description": "Validation Error", "model": ErrorResponse},
         },
     )
     async def like_tweet_by_id(
@@ -269,11 +283,11 @@ async def get_fake_twitter_app() -> FastAPI:
                 message with corresponding http status code.
 
         """
-        fake_twitter_logger.info(f"{api_key=} | {id=}")
+        project_logger.info(f"{api_key=} | {id=}")
         error_msg, http_code = await HandleEndpoint.like_tweet_by_id(
             api_key, id,
         )
-        fake_twitter_logger.info(f"{error_msg=}, {http_code=}")
+        project_logger.info(f"{error_msg=}, {http_code=}")
         response.status_code = http_code
         if error_msg:
             return ErrorResponse(**error_msg)
@@ -283,9 +297,10 @@ async def get_fake_twitter_app() -> FastAPI:
         path="/api/tweets/{id}/likes",
         description="Dislike tweet by id",
         responses={
-            201: {"description": "OK", "model": SuccessResponse},
+            201: {"description": "Created", "model": SuccessResponse},
             400: {"description": "Bad Request", "model": ErrorResponse},
             401: {"description": "Unauthorized", "model": ErrorResponse},
+            422: {"description": "Validation Error", "model": ErrorResponse},
         },
     )
     async def dislike_tweet_by_id(
@@ -305,11 +320,11 @@ async def get_fake_twitter_app() -> FastAPI:
                 error message with corresponding http status code.
 
         """
-        fake_twitter_logger.info(f"{api_key=} | {id=}")
+        project_logger.info(f"{api_key=} | {id=}")
         error_msg, http_code = await HandleEndpoint.dislike_tweet_by_id(
             api_key, id,
         )
-        fake_twitter_logger.info(f"{error_msg=}, {http_code=}")
+        project_logger.info(f"{error_msg=}, {http_code=}")
         response.status_code = http_code
         if error_msg:
             return ErrorResponse(**error_msg)
@@ -319,9 +334,10 @@ async def get_fake_twitter_app() -> FastAPI:
         path="/api/users/{id}/follow",
         description="Follow user by id",
         responses={
-            201: {"description": "OK", "model": SuccessResponse},
+            201: {"description": "Created", "model": SuccessResponse},
             400: {"description": "Bad Request", "model": ErrorResponse},
             401: {"description": "Unauthorized", "model": ErrorResponse},
+            422: {"description": "Validation Error", "model": ErrorResponse},
         },
     )
     async def follow_other_user(
@@ -341,11 +357,11 @@ async def get_fake_twitter_app() -> FastAPI:
                 or error message with corresponding http status code.
 
         """
-        fake_twitter_logger.info(f"{api_key=} | {id=}")
+        project_logger.info(f"{api_key=} | {id=}")
         error_msg, http_code = await HandleEndpoint.follow_other_user(
             api_key, id,
         )
-        fake_twitter_logger.info(f"{error_msg=}, {http_code=}")
+        project_logger.info(f"{error_msg=}, {http_code=}")
         response.status_code = http_code
         if error_msg:
             return ErrorResponse(**error_msg)
@@ -355,9 +371,10 @@ async def get_fake_twitter_app() -> FastAPI:
         path="/api/users/{id}/follow",
         description="Unsubscribe from user by id",
         responses={
-            201: {"description": "OK", "model": SuccessResponse},
+            201: {"description": "Created", "model": SuccessResponse},
             400: {"description": "Bad Request", "model": ErrorResponse},
             401: {"description": "Unauthorized", "model": ErrorResponse},
+            422: {"description": "Validation Error", "model": ErrorResponse},
         },
     )
     async def unfollow_user(
@@ -377,11 +394,11 @@ async def get_fake_twitter_app() -> FastAPI:
                 error message with corresponding http status code.
 
         """
-        fake_twitter_logger.info(f"{api_key=} | {id=}")
+        project_logger.info(f"{api_key=} | {id=}")
         error_msg, http_code = await HandleEndpoint.unfollow_user(
             api_key, id,
         )
-        fake_twitter_logger.info(f"{error_msg=}, {http_code=}")
+        project_logger.info(f"{error_msg=}, {http_code=}")
         response.status_code = http_code
         if error_msg:
             return ErrorResponse(**error_msg)
@@ -393,6 +410,7 @@ async def get_fake_twitter_app() -> FastAPI:
         responses={
             200: {"description": "OK", "model": TweetFeedOut},
             401: {"description": "Unauthorized", "model": ErrorResponse},
+            422: {"description": "Validation Error", "model": ErrorResponse},
         },
     )
     async def get_tweet_feed(
@@ -411,10 +429,10 @@ async def get_fake_twitter_app() -> FastAPI:
                 error message with corresponding http status code.
 
         """
-        fake_twitter_logger.info(f"{api_key=}")
+        project_logger.info(f"{api_key=}")
         # data, http_code = await HandleEndpoint.get_user_tweet_feed(api_key)
         tweet_feed, http_code = await HandleEndpoint.get_full_tweet_feed()
-        fake_twitter_logger.info(f"{tweet_feed=}, {http_code=}")
+        project_logger.info(f"{tweet_feed=}, {http_code=}")
         response.status_code = http_code
         return TweetFeedOut(**tweet_feed)
 
@@ -425,6 +443,7 @@ async def get_fake_twitter_app() -> FastAPI:
             200: {"description": "OK", "model": UserProfileDetailsOut},
             400: {"description": "Bad Request", "model": ErrorResponse},
             401: {"description": "Unauthorized", "model": ErrorResponse},
+            422: {"description": "Validation Error", "model": ErrorResponse},
         },
     )
     async def get_own_profile_details(
@@ -443,11 +462,11 @@ async def get_fake_twitter_app() -> FastAPI:
             profile or error message with corresponding http status code.
 
         """
-        fake_twitter_logger.info(f"{api_key=}")
+        project_logger.info(f"{api_key=}")
         details, http_code = await HandleEndpoint.get_own_profile(
             api_key,
         )
-        fake_twitter_logger.info(f"{details=}, {http_code=}")
+        project_logger.info(f"{details=}, {http_code=}")
         response.status_code = http_code
         if http_code == 200:
             return UserProfileDetailsOut(**details)
@@ -460,6 +479,7 @@ async def get_fake_twitter_app() -> FastAPI:
             200: {"description": "OK", "model": UserProfileDetailsOut},
             400: {"description": "Bad Request", "model": ErrorResponse},
             401: {"description": "Unauthorized", "model": ErrorResponse},
+            422: {"description": "Validation Error", "model": ErrorResponse},
         },
     )
     async def get_user_profile_details(
@@ -479,9 +499,9 @@ async def get_fake_twitter_app() -> FastAPI:
             profile or error message with corresponding http status code.
 
         """
-        fake_twitter_logger.info(f"{api_key=}")
+        project_logger.info(f"{api_key=}")
         details, http_code = await HandleEndpoint.get_user_profile(id)
-        fake_twitter_logger.info(f"{details=}, {http_code=}")
+        project_logger.info(f"{details=}, {http_code=}")
         response.status_code = http_code
         if http_code == 200:
             return UserProfileDetailsOut(**details)
@@ -490,4 +510,4 @@ async def get_fake_twitter_app() -> FastAPI:
     return app
 
 
-application = async_run(get_fake_twitter_app())
+application = async_run(get_junior_twitter_clone())

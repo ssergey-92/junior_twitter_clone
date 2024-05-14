@@ -111,7 +111,7 @@ class HandleEndpoint:
                 api_key, media_files_ids,
             )
 
-        return None, 200
+        return None, 201
 
     @staticmethod
     async def dislike_tweet_by_id(

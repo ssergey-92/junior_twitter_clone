@@ -8,11 +8,11 @@ from .common_data_for_tests import (
     BAD_REQUEST_STATUS_CODE,
     CREATED_STATUS_CODE,
     ERROR_MESSAGE,
-    FAKE_TWITTER_ENDPOINTS,
+    APPLICATION_ENDPOINTS,
 )
 
-dislike_tweet_endpoint = FAKE_TWITTER_ENDPOINTS["dislike_tweet"]["endpoint"]
-dislike_tweet_method = FAKE_TWITTER_ENDPOINTS["dislike_tweet"]["http_method"]
+dislike_tweet_endpoint = APPLICATION_ENDPOINTS["dislike_tweet"]["endpoint"]
+dislike_tweet_method = APPLICATION_ENDPOINTS["dislike_tweet"]["http_method"]
 invalid_dislike_tweet_data = {
     "urls": (
         dislike_tweet_endpoint.format(id="ten"),

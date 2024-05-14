@@ -6,10 +6,10 @@ services:
       context: server
     stop_signal: SIGKILL
     environment:
-      - DATABASE_URL=postgresql+asyncpg://admin:admin@db:5432/fake_twitter
+      - DATABASE_URL=postgresql+asyncpg://admin:admin@db:5432/junior_twitter_clone
       - SAVE_MEDIA_PATH=/usr/share/nginx/html/images
     networks:
-      - fake_twitter
+      - junior_twitter_clone
     ports:
       - '80:80'
     volumes:
@@ -24,9 +24,9 @@ services:
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=fake_twitter
+      - POSTGRES_DB=junior_twitter_clone
     networks:
-      - fake_twitter
+      - junior_twitter_clone
     ports:
       - '5432:5432'
     volumes:
@@ -38,5 +38,5 @@ services:
                -c log_directory=/var/lib/postgresql/data/log
 
 networks:
-  fake_twitter:
+  junior_twitter_clone:
     driver: bridge

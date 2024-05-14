@@ -1,4 +1,4 @@
-"""Start 'Fake Twitter' application."""
+"""Start 'Junior Twitter Clone' application."""
 from signal import SIGINT, signal
 from subprocess import run as subprocess_run
 from typing import Optional
@@ -25,6 +25,6 @@ def signal_handler(signum: int, frame: Optional[FrameType]) -> None:
 
 if __name__ == "__main__":
     signal(SIGINT, signal_handler)
-    start_fake_twitter = subprocess_run(
+    run_junior_twitter_clone = subprocess_run(
         args="docker compose -f docker-compose.yml up --build", shell=True,
     )

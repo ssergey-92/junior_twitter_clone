@@ -9,11 +9,11 @@ from .common_data_for_tests import (
     BAD_REQUEST_STATUS_CODE,
     CREATED_STATUS_CODE,
     ERROR_MESSAGE,
-    FAKE_TWITTER_ENDPOINTS,
+    APPLICATION_ENDPOINTS,
 )
 
-add_tweet_endpoint = FAKE_TWITTER_ENDPOINTS["add_tweet"]["endpoint"]
-add_tweet_http_method = FAKE_TWITTER_ENDPOINTS["add_tweet"]["http_method"]
+add_tweet_endpoint = APPLICATION_ENDPOINTS["add_tweet"]["endpoint"]
+add_tweet_http_method = APPLICATION_ENDPOINTS["add_tweet"]["http_method"]
 correct_tweet_body_data_and_response = (
     {
         "body": {"tweet_data": "tweet # 4"},

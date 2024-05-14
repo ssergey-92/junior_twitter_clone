@@ -11,7 +11,7 @@ from .common_data_for_tests import (
     BAD_REQUEST_STATUS_CODE,
     CREATED_STATUS_CODE,
     ERROR_MESSAGE,
-    FAKE_TWITTER_ENDPOINTS,
+    APPLICATION_ENDPOINTS,
     FILE_NAME_1,
     FILE_NAME_2,
     FILE_NAME_3,
@@ -21,8 +21,8 @@ from .common_data_for_tests import (
     open_test_image,
 )
 
-add_media_endpoint = FAKE_TWITTER_ENDPOINTS["add_media"]["endpoint"]
-add_media_http_method = FAKE_TWITTER_ENDPOINTS["add_media"]["http_method"]
+add_media_endpoint = APPLICATION_ENDPOINTS["add_media"]["endpoint"]
+add_media_http_method = APPLICATION_ENDPOINTS["add_media"]["http_method"]
 correct_body_with_file_name_for_rename = {
     "file": open_test_image(MEDIA_FILE_NAME_FOR_RENAME),
 }

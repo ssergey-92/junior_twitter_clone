@@ -4,7 +4,7 @@ from pytest import mark as pytest_mark
 
 from .common_data_for_tests import (
     CORRECT_GET_OWN_PROFILE_RESPONSE,
-    FAKE_TWITTER_ENDPOINTS,
+    APPLICATION_ENDPOINTS,
 )
 
 
@@ -17,8 +17,8 @@ class TestGetOwnProfileEndpoint:
     ) -> None:
         apy_key = CORRECT_GET_OWN_PROFILE_RESPONSE["profile"]["user"]["name"]
         response = await client.request(
-            method=FAKE_TWITTER_ENDPOINTS["get_own_profile"]["http_method"],
-            url=FAKE_TWITTER_ENDPOINTS["get_own_profile"]["endpoint"],
+            method=APPLICATION_ENDPOINTS["get_own_profile"]["http_method"],
+            url=APPLICATION_ENDPOINTS["get_own_profile"]["endpoint"],
             headers={"api-key": apy_key},
         )
         assert response.json() == CORRECT_GET_OWN_PROFILE_RESPONSE["profile"]

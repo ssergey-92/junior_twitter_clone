@@ -98,7 +98,7 @@ invalid_add_media_files_data = (
 valid_delete_tweet_data = {
     "api_key": test_user_1["name"],
     "tweet_id": TWEET_1["id"],
-    "result": {"message": None, "status_code": OK_STATUS_CODE},
+    "result": {"message": None, "status_code": CREATED_STATUS_CODE},
 }
 invalid_delete_tweet_data = {
     "api_key": test_user_1["name"],  # belongs to test_user_1

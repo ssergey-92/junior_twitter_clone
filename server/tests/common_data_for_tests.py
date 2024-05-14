@@ -16,7 +16,7 @@ UNAUTHORIZED_SATUS_CODE = 401
 FORBIDDEN_STATUS_CODE = 403
 NOT_FOUND_SATUS_CODE = 404
 METHOD_NOT_ALLOWED_SATUS_CODE = 405
-FAKE_TWITTER_ENDPOINTS = {
+APPLICATION_ENDPOINTS = {
     "add_tweet": {"endpoint": "/api/tweets", "http_method": "POST"},
     "add_media": {"endpoint": "/api/medias", "http_method": "POST"},
     "delete_tweet": {"endpoint": "/api/tweets/{id}", "http_method": "DELETE"},

@@ -8,12 +8,12 @@ from .common_data_for_tests import (
     BAD_REQUEST_STATUS_CODE,
     CREATED_STATUS_CODE,
     ERROR_MESSAGE,
-    FAKE_TWITTER_ENDPOINTS,
+    APPLICATION_ENDPOINTS,
     test_user_1,
 )
 
-like_tweet_endpoint = FAKE_TWITTER_ENDPOINTS["like_tweet"]["endpoint"]
-like_tweet_method = FAKE_TWITTER_ENDPOINTS["like_tweet"]["http_method"]
+like_tweet_endpoint = APPLICATION_ENDPOINTS["like_tweet"]["endpoint"]
+like_tweet_method = APPLICATION_ENDPOINTS["like_tweet"]["http_method"]
 invalid_like_tweet_url = {
     "urls": (
         like_tweet_endpoint.format(id="ten"),

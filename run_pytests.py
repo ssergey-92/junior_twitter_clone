@@ -1,4 +1,4 @@
-"""Start pytest for project 'Fake Twitter'."""
+"""Start pytest for project 'Junior Twitter Clone'."""
 from subprocess import Popen as subprocess_Popen
 from subprocess import run as subprocess_run
 from time import sleep

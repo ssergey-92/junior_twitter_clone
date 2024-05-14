@@ -8,12 +8,12 @@ from .common_data_for_tests import (
     BAD_REQUEST_STATUS_CODE,
     CREATED_STATUS_CODE,
     ERROR_MESSAGE,
-    FAKE_TWITTER_ENDPOINTS,
+    APPLICATION_ENDPOINTS,
     test_user_1,
 )
 
-follow_user_url = FAKE_TWITTER_ENDPOINTS["follow_user"]["endpoint"]
-follow_user_method = FAKE_TWITTER_ENDPOINTS["follow_user"]["http_method"]
+follow_user_url = APPLICATION_ENDPOINTS["follow_user"]["endpoint"]
+follow_user_method = APPLICATION_ENDPOINTS["follow_user"]["http_method"]
 invalid_follow_user_data = {
     "urls": (
         follow_user_url.format(id="ten"),

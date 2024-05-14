@@ -7,12 +7,12 @@ from .common_data_for_tests import (
     BAD_REQUEST_STATUS_CODE,
     CORRECT_GET_USER_PROFILE_RESPONSE,
     ERROR_MESSAGE,
-    FAKE_TWITTER_ENDPOINTS,
+    APPLICATION_ENDPOINTS,
 )
 
-get_user_profile_url = FAKE_TWITTER_ENDPOINTS["get_user_profile"]["endpoint"]
+get_user_profile_url = APPLICATION_ENDPOINTS["get_user_profile"]["endpoint"]
 get_user_profile_method = (
-    FAKE_TWITTER_ENDPOINTS["get_user_profile"]["http_method"])
+    APPLICATION_ENDPOINTS["get_user_profile"]["http_method"])
 exist_user_id = CORRECT_GET_USER_PROFILE_RESPONSE["profile"]["user"]["id"]
 unexist_user_id = 0
 

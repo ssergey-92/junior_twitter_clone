@@ -5,7 +5,7 @@ from pytest import mark as pytest_mark
 from .common_data_for_tests import (
     AUTHORIZED_HEADER,
     CORRECT_GET_TWEET_FEED_RESPONSE,
-    FAKE_TWITTER_ENDPOINTS,
+    APPLICATION_ENDPOINTS,
 )
 
 
@@ -17,8 +17,8 @@ class TestGetTweetFeedEndpoint:
         client: AsyncClient, init_test_data_for_db: None,
     ) -> None:
         response = await client.request(
-            method=FAKE_TWITTER_ENDPOINTS["get_tweet_feed"]["http_method"],
-            url=FAKE_TWITTER_ENDPOINTS["get_tweet_feed"]["endpoint"],
+            method=APPLICATION_ENDPOINTS["get_tweet_feed"]["http_method"],
+            url=APPLICATION_ENDPOINTS["get_tweet_feed"]["endpoint"],
             headers=AUTHORIZED_HEADER,
         )
         assert response.json() == CORRECT_GET_TWEET_FEED_RESPONSE["tweet_feed"]

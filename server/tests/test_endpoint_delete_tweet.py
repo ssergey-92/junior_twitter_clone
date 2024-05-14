@@ -9,20 +9,18 @@ from server.app.database import MediaFile, Tweet, TweetLike
 from .common_data_for_tests import (
     AUTHORIZED_HEADER,
     BAD_REQUEST_STATUS_CODE,
+    CREATED_STATUS_CODE,
     ERROR_MESSAGE,
-    FAKE_TWITTER_ENDPOINTS,
+    APPLICATION_ENDPOINTS,
     FORBIDDEN_STATUS_CODE,
-    OK_STATUS_CODE,
     SAVE_MEDIA_ABS_PATH,
     TWEET_1,
     TWEET_2,
     TWEET_3,
 )
 
-delete_tweet_endpoint = FAKE_TWITTER_ENDPOINTS["delete_tweet"]["endpoint"]
-delete_tweet_http_method = FAKE_TWITTER_ENDPOINTS["delete_tweet"][
-    "http_method"
-]
+delete_tweet_endpoint = APPLICATION_ENDPOINTS["delete_tweet"]["endpoint"]
+delete_tweet_http_method = APPLICATION_ENDPOINTS["delete_tweet"]["http_method"]
 invalid_delete_tweet_data_1 = {
     "urls": (
             delete_tweet_endpoint.format(id="ten"),
@@ -49,7 +47,9 @@ valid_delete_tweet_data = {
             "header": {"api-key": TWEET_3["author_name"]},
         },
     ),
-    "result": {"message": {"result": True}, "status_code": OK_STATUS_CODE},
+    "result": {
+        "message": {"result": True}, "status_code": CREATED_STATUS_CODE
+    },
 }
 invalid_delete_tweet_data_2 = {
     "url": delete_tweet_endpoint.format(id=1),  # tweet is not belong to user

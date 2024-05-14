@@ -24,4 +24,4 @@ def get_stream_logger(logger_name: str) -> Logger:
     return logger
 
 
-fake_twitter_logger = get_stream_logger("fake_twitter")
+project_logger = get_stream_logger("junior_twitter_clone")

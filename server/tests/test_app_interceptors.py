@@ -8,15 +8,15 @@ from .common_data_for_tests import (
     AUTHORIZED_HEADER,
     DEFAULT_TABLE_NAMES,
     ERROR_MESSAGE,
-    FAKE_TWITTER_ENDPOINTS,
+    APPLICATION_ENDPOINTS,
     UNAUTHORIZED_SATUS_CODE,
 )
 
-delete_tweet_endpoint = FAKE_TWITTER_ENDPOINTS["delete_tweet"]["endpoint"]
+delete_tweet_endpoint = APPLICATION_ENDPOINTS["delete_tweet"]["endpoint"]
 test_routes_for_intercept_requests = (
     {
-        "endpoint": FAKE_TWITTER_ENDPOINTS["add_media"]["endpoint"],
-        "http_method": FAKE_TWITTER_ENDPOINTS["add_media"]["http_method"],
+        "endpoint": APPLICATION_ENDPOINTS["add_media"]["endpoint"],
+        "http_method": APPLICATION_ENDPOINTS["add_media"]["http_method"],
         "result": {
             "message": ERROR_MESSAGE, "status_code": UNAUTHORIZED_SATUS_CODE,
         },
@@ -30,7 +30,7 @@ test_routes_for_intercept_requests = (
     },
     {
         "endpoint": delete_tweet_endpoint.format(id=1),
-        "http_method": FAKE_TWITTER_ENDPOINTS["delete_tweet"]["http_method"],
+        "http_method": APPLICATION_ENDPOINTS["delete_tweet"]["http_method"],
         "result": {
             "message": ERROR_MESSAGE, "status_code": UNAUTHORIZED_SATUS_CODE,
         },
