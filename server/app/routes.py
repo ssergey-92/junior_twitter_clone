@@ -20,6 +20,7 @@ from schemas import (
     AddTweetIn,
     AddTweetOut,
     ErrorResponse,
+    Settings,
     SuccessResponse,
     TweetFeedOut,
     UserProfileDetailsOut,
@@ -46,7 +47,10 @@ async def get_junior_twitter_clone() -> FastAPI:
     """
     @asynccontextmanager
     async def lifespan(app: Callable) -> AsyncGenerator:
-        """Init db before starting app and close db connection before stopping.
+        """Before starting and stopping app logic.
+
+        Check os environ additional parameters and init db before starting app
+        and close db connection before stopping it.
 
         Args:
             app (Callable): FastApi application
@@ -56,6 +60,7 @@ async def get_junior_twitter_clone() -> FastAPI:
 
         """
         project_logger.info("Started lifespan")
+        project_settings = Settings()
         await init_db()
         yield
         await close_db_connection()

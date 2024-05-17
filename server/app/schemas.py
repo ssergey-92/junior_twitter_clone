@@ -1,7 +1,40 @@
 """Module contain validation schemas for application endpoints."""
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings
+
+
+class Settings(BaseSettings):
+    """Class Settings, parent class BaseSettings.
+
+    Class check additional parameters passed to os environ to run the
+    application.
+
+    Attributes:
+        postgres_user (str): user for PostgreSQL db
+        postgres_password (str): password for the above user
+        postgres_db (str): name of application db
+        database_url (str): url for connect to application db
+        save_media_path (str): abs path where to save media files
+        pytest_async_engine (Optional[bool]): flag for creation SQLAlchemy
+        async engine for running Pytests.
+        save_media_rel_path (Optional[str]): relative path for saving images
+        while running Pytests.
+
+    """
+
+    postgres_user: str = Field(env="POSTGRES_USER")
+    postgres_password: str = Field(env="POSTGRES_PASSWORD")
+    postgres_db: str = Field(env="POSTGRES_DB")
+    database_url: str = Field(env="DATABASE_URL")
+    save_media_path: str = Field(env="SAVE_MEDIA_PATH")
+    pytest_async_engine: Optional[bool] = Field(
+        default=False, env="PYTEST_ASYNC_ENGINE",
+    )
+    save_media_rel_path: Optional[str] = Field(
+        default="", env="SAVE_MEDIA_REL_PATH",
+    )
 
 
 class SuccessResponse(BaseModel):
