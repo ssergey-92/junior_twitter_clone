@@ -1,12 +1,13 @@
-"""Module for testing endpoint 'add media' from app.routes.py ."""
+"""Module for testing endpoint 'add media' from app.fastapi_app.py ."""
+
 from os import listdir as os_listdir
 
 from httpx import AsyncClient
 from pytest import mark as pytest_mark
 
-from server.app.database import MediaFile
+from app.models.media_files import MediaFile
 
-from .common_data_for_tests import (
+from .common import (
     AUTHORIZED_HEADER,
     BAD_REQUEST_STATUS_CODE,
     CREATED_STATUS_CODE,

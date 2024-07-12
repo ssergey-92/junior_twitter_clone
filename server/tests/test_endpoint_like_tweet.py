@@ -1,9 +1,10 @@
-"""Module for testing endpoint 'like tweet' from app.routes.py ."""
+"""Module for testing endpoint 'like tweet' from app.fastapi_app.py ."""
+
 from httpx import AsyncClient
 from pytest import mark as pytest_mark
 
-from ..app.database import TweetLike
-from .common_data_for_tests import (
+from app.models.tweet_likes import TweetLike
+from .common import (
     AUTHORIZED_HEADER,
     BAD_REQUEST_STATUS_CODE,
     CREATED_STATUS_CODE,

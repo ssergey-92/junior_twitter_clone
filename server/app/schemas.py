@@ -1,4 +1,5 @@
 """Module contain validation schemas for application endpoints."""
+
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
@@ -35,6 +36,10 @@ class Settings(BaseSettings):
     save_media_rel_path: Optional[str] = Field(
         default="", env="SAVE_MEDIA_REL_PATH",
     )
+    pytest_logs: Optional[bool] = Field(
+        default=False, env="PYTEST_LOGS",
+    )
+    logs_path: str = Field(env="LOGS_PATH")
 
 
 class SuccessResponse(BaseModel):

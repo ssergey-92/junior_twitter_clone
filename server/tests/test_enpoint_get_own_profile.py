@@ -1,8 +1,9 @@
-"""Module for testing endpoint 'get own profile' from app.routes.py ."""
+"""Module for testing endpoint 'get own profile' from app.fastapi_app.py ."""
+
 from httpx import AsyncClient
 from pytest import mark as pytest_mark
 
-from .common_data_for_tests import (
+from .common import (
     CORRECT_GET_OWN_PROFILE_RESPONSE,
     APPLICATION_ENDPOINTS,
 )

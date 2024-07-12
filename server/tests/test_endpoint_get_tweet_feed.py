@@ -1,8 +1,9 @@
-"""Module for testing endpoint 'get tweet feed' from app.routes.py ."""
+"""Module for testing endpoint 'get tweet feed' from app.fastapi_app.py ."""
+
 from httpx import AsyncClient
 from pytest import mark as pytest_mark
 
-from .common_data_for_tests import (
+from .common import (
     AUTHORIZED_HEADER,
     CORRECT_GET_TWEET_FEED_RESPONSE,
     APPLICATION_ENDPOINTS,

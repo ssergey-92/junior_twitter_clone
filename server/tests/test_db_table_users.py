@@ -1,8 +1,9 @@
-"""Module for testing methods of class User from app.database.py ."""
+"""Module for testing class User from app.models.users.py ."""
+
 from pytest import mark as pytest_mark
 
-from ..app.database import User
-from .common_data_for_tests import test_user_1, test_user_2, test_user_3
+from app.models.users import User
+from .common import test_user_1, test_user_2, test_user_3
 
 exist_users = (test_user_1, test_user_2, test_user_3)
 unexist_users = (
@@ -131,7 +132,7 @@ class TestTableUserMethods:
 
     @staticmethod
     @pytest_mark.asyncio
-    async def test_add_user(recreate_all_tables: None) -> None:
+    async def test_add_user() -> None:
         await User.add_user(new_user["name"])
         assert await User.is_existed_user_name(new_user["name"]) is True
 

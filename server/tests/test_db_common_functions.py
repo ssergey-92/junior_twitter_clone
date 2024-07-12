@@ -1,4 +1,5 @@
-"""Module for testing functions from app.database.py ."""
+"""Module for testing db initialization and connection functions ."""
+
 from os import environ as os_environ
 
 from pytest import mark as pytest_mark, raises as pytest_raises
@@ -6,16 +7,13 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
 
-from ..app.database import (
-    MediaFile,
-    Tweet,
-    TweetLike,
-    User,
-    followers,
-    get_async_engine,
-    init_db,
-)
-from .common_data_for_tests import DEFAULT_TABLE_NAMES
+from .common import DEFAULT_TABLE_NAMES
+from app.models.connection import get_async_engine
+from app.models.initialization import init_db
+from app.models.media_files import MediaFile
+from app.models.tweets import Tweet
+from app.models.tweet_likes import TweetLike
+from app.models.users import User, followers
 
 
 def test_get_async_engine() -> None:
@@ -31,7 +29,7 @@ def test_get_async_engine() -> None:
 
 @pytest_mark.asyncio
 async def test_create_tables(
-    recreate_all_tables, test_session: AsyncSession,
+    test_session: AsyncSession,
 ) -> None:
     table_names_query = await test_session.execute(
         text("SELECT tablename FROM pg_tables WHERE schemaname = 'public';"),
@@ -43,7 +41,7 @@ async def test_create_tables(
 
 @pytest_mark.asyncio
 async def test_init_db(
-    recreate_all_tables: None, test_session: AsyncSession,
+    clear_test_db_tables: None, test_session: AsyncSession,
 ) -> None:
     await init_db()
     total_users = await test_session.execute(select(func.count(User.id)))
