@@ -1,29 +1,31 @@
 """Configuration file for pytest."""
-from os import environ as os_environ
-from os import listdir as os_listdir
-from os import mkdir as os_mkdir
-from os import path as os_path
-from shutil import copy as shutil_copy
-from shutil import rmtree as shutil_rmtree
+
+from os import (
+    environ as os_environ,
+    listdir as os_listdir,
+    mkdir as os_mkdir,
+    path as os_path,
+)
+from shutil import copy as shutil_copy, rmtree as shutil_rmtree
 
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from pytest import fixture as sync_fixture
 from pytest_asyncio import fixture as async_fixture
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing_extensions import AsyncGenerator
 
-from server.app.database import (
-    Base,
-    MediaFile,
-    Tweet,
-    TweetLike,
-    User,
-    async_engine,
-    async_session,
-)
-from server.app.routes import application
-from .common_data_for_tests import (
+from app.models.connection import async_engine, async_session, Base
+from app.models.initialization import create_tables
+from app.models.followers import followers
+from app.models.media_files import MediaFile
+from app.models.tweets import Tweet
+from app.models.tweet_likes import TweetLike
+from app.models.users import User
+
+from server.app.fastapi_app import application
+from .common import (
     DEFAULT_TEST_IMAGES_PATH,
     LIKE_1_1,
     LIKE_2_2,
@@ -43,6 +45,11 @@ from .common_data_for_tests import (
     test_user_3,
 )
 
+sql_query_clear_db_tables = """
+TRUNCATE TABLE followers, media_files, tweets, tweets_likes, users 
+RESTART IDENTITY;
+"""
+
 
 @async_fixture(autouse=True, scope="session")
 async def add_paths_to_os_environ() -> None:
@@ -57,7 +64,7 @@ async def reset_os_environ_paths() -> AsyncGenerator:
     os_environ["SAVE_MEDIA_PATH"] = SAVE_MEDIA_ABS_PATH
 
 
-@async_fixture(scope="session")
+@async_fixture(autouse=True, scope="session")
 async def app() -> FastAPI:
     """Return FastApi app."""
     return application
@@ -73,7 +80,7 @@ async def app_routes(app) -> list:
 async def client(app) -> AsyncClient:
     """Yield asynchronous client."""
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test",
+            transport=ASGITransport(app=app), base_url="http://test",
     ) as async_client:
         yield async_client
 
@@ -85,17 +92,23 @@ async def test_session() -> AsyncSession:
         yield session
 
 
-@async_fixture(scope="function")
-async def recreate_all_tables() -> None:
+@async_fixture(scope="session", autouse=True)
+async def create_all_tables() -> None:
     """Remove and then create all tables for db."""
+    await create_tables()
+
+
+@async_fixture(scope="function")
+async def clear_test_db_tables(test_session: AsyncSession,) -> None:
+    """Clear test db tables data"""
     async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.execute(text(sql_query_clear_db_tables))
 
 
 @async_fixture(scope="function")
 async def init_test_data_for_db(
-    recreate_all_tables: None, test_session: AsyncSession,
+        clear_test_db_tables: None,
+        test_session: AsyncSession,
 ) -> None:
     """Init db default test data for testing."""
     test_1 = User(name=test_user_1["name"])

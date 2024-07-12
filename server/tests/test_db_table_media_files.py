@@ -1,8 +1,9 @@
-"""Module for testing methods of class MediaFile from app.database.py ."""
+"""Module for testing class MediaFile from app.models.media_files.py ."""
+
 from pytest import mark as pytest_mark
 
-from ..app.database import MediaFile
-from .common_data_for_tests import (
+from app.models.media_files import MediaFile
+from .common import (
     DEFAULT_TOTAL_MEDIA_FILES,
     MEDIA_FILE_1,
     MEDIA_FILE_2,

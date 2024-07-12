@@ -6,13 +6,14 @@ services:
       context: server
     stop_signal: SIGKILL
     env_file:
-      - .env
+      - ./.env
     networks:
       - junior_twitter_clone
     ports:
       - '80:80'
     volumes:
       - ./server/static/images:/usr/share/nginx/html/images
+      - ./logs/app/:${LOGS_PATH}
     depends_on:
       - db
 

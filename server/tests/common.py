@@ -1,4 +1,5 @@
 """File with default data for testing."""
+
 from os import environ as os_environ, path as os_path
 from typing import BinaryIO
 
@@ -41,11 +42,13 @@ APPLICATION_ENDPOINTS = {
     "get_user_profile": {"endpoint": "/api/users/{id}", "http_method": "GET"},
 }
 ERROR_MESSAGE = {"result": False, "error_type": "", "error_message": ""}
+
 file_dir_path = os_path.dirname(__file__)
 DEFAULT_TEST_IMAGES_PATH = os_path.join(file_dir_path, "test_images/default")
 SAVE_MEDIA_ABS_PATH = os_path.join(
     file_dir_path, os_environ.get("SAVE_MEDIA_REL_PATH", ""),
 )
+
 test_user_1 = {"name": "test_1", "id": 1}
 test_user_2 = {"name": "test_2", "id": 2}
 test_user_3 = {"name": "test_3", "id": 3}

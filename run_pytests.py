@@ -14,7 +14,7 @@ if __name__ == "__main__":
     )
     sleep(2)  # time to create the container with test_db
     subprocess_run(
-        args="pip install -r server/dev_requirements.txt && "
+        args="pip install -r server/requirements/dev_requirements.txt && "
         "timeout 15s docker exec test_postgresql sh -c 'pg_isready' && "
         "pytest --cov-report term-missing --cov=server/app server/tests -v ;"
         "cd server/tests && "

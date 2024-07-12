@@ -1,8 +1,9 @@
-"""Module for testing methods of class Tweet from app.database.py ."""
+"""Module for testing class Tweet from app.models.tweets.py ."""
+
 from pytest import mark as pytest_mark
 
-from ..app.database import Tweet
-from .common_data_for_tests import (
+from app.models.tweets import Tweet
+from .common import (
     DEFAULT_TOTAL_TWEETS,
     TWEET_1,
     TWEET_2,

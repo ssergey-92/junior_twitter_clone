@@ -1,10 +1,11 @@
-"""Module for testing app interceptors  from app.routes.py ."""
+"""Module for testing app interceptors  from app.fastapi_app.py ."""
+
 from httpx import AsyncClient
 from pytest import mark as pytest_mark
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
 
-from .common_data_for_tests import (
+from .common import (
     AUTHORIZED_HEADER,
     DEFAULT_TABLE_NAMES,
     ERROR_MESSAGE,

@@ -15,7 +15,7 @@ if __name__ == "__main__":
         "echo ===================================================;"
         "echo Starting mypy;"
         "cd server/app &&"
-        "mypy --explicit-package-bases .;",
+        "mypy --ignore-missing-imports --explicit-package-bases .;",
         shell=True,
         stdout=True,
         stderr=True,

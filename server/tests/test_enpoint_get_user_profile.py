@@ -1,8 +1,9 @@
-"""Module for testing endpoint 'get user profile' from app.routes.py ."""
+"""Module for testing endpoint 'get user profile' from app.fastapi_app.py ."""
+
 from httpx import AsyncClient
 from pytest import mark as pytest_mark
 
-from .common_data_for_tests import (
+from .common import (
     AUTHORIZED_HEADER,
     BAD_REQUEST_STATUS_CODE,
     CORRECT_GET_USER_PROFILE_RESPONSE,
