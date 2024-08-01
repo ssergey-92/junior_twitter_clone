@@ -30,20 +30,27 @@ The backend code is:
 - Checked by linters such as mypy and wemake-python-styleguide(flake8 with different plugins) 
 - Documented with Swagger in YAML format
 
-### Getting started ###
+### Getting started 
 
 This app is easy to start. Follow  the bellow requirements for Linux (Ubuntu): 
 
 #### Installation
-Ignore the following steps if you have already installed Docker Compose and Python 3.10.12.
+Ignore the following steps if you have already installed Docker Compose, Python 3.10.12 and Git.
 
 1. Install docker engine and compose plugin for it.   
-Follow steps from official site:  [Docker Engine Install](https://docs.docker.com/engine/install/ubuntu/) and [Docker Compose Install](https://docs.docker.com/compose/install/)
+- Follow steps from official site:  [Docker Engine Install](https://docs.docker.com/engine/install/ubuntu/) and [Docker Compose Install](https://docs.docker.com/compose/install/)
 
 2. Install one of 
 - Python 3.10.12 from official site:  [Python Downloads](https://www.python.org/downloads/)
 - IDE PyCharm with Python 3.10.12 from official site: [PyCharm Installation Guide](https://www.jetbrains.com/help/pycharm/installation-guide.html#standalone)
 
+3. Install Git for "git clone" if required.
+- Follow steps from official site: [Git install](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+
+#### Clone or copy repository
+Select one of the below options:
+- git clone https://github.com/ssergey-92/junior_twitter_clone.git
+- copy project from https://github.com/ssergey-92/junior_twitter_clone
 
 #### Running the application:
 
