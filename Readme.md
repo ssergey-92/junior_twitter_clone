@@ -18,17 +18,16 @@ Any registered user can:
 - Follow and unfollow users
 - View other users' profiles and their own profile
 
-### Backend Features ###
+### Backend Stack ###
 
-The backend code is:
-- Written on Python 3.10.12
-- Using Docker Compose as a tool for running the application
-- Using  FastAPI (async) framework as an ASGI application 
-- Using NGINX as a reverse proxy server and Gunicorn with Uvicorn workers as a WSGI server
-- Using database PostgreSQL for data storage and ORM SQLAlchemy for async connections and quires
-- Covered and tested by Pytest
-- Checked by linters such as mypy and wemake-python-styleguide(flake8 with different plugins) 
-- Documented with Swagger in YAML format
+- Python 3.10
+- FastAPI(async) 
+- PostgreSQL and SQLAlchemy(async)
+- NGINX + Gunicorn with Uvicorn workers
+- Docker Compose
+- Pytest
+- mypy and wemake-python-styleguide(flake8 with different plugins)
+- Swagger in YAML format, Docstring and Type hint 
 
 ### Getting started 
 
@@ -42,15 +41,16 @@ Ignore the following steps if you have already installed Docker Compose, Python 
 
 2. Install one of 
 - Python 3.10.12 from official site:  [Python Downloads](https://www.python.org/downloads/)
-- IDE PyCharm with Python 3.10.12 from official site: [PyCharm Installation Guide](https://www.jetbrains.com/help/pycharm/installation-guide.html#standalone)
+- IDE (PyCharm or Visual Stidio Code or ...)
 
-3. Install Git for "git clone" if required.
+3. Install Git if required.
 - Follow steps from official site: [Git install](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-#### Clone or copy repository
-Select one of the below options:
-- git clone https://github.com/ssergey-92/junior_twitter_clone.git
-- copy project from https://github.com/ssergey-92/junior_twitter_clone
+#### Clone repository
+From the command line: 
+```
+git clone https://github.com/ssergey-92/junior_twitter_clone.git
+```
 
 #### Running the application:
 
@@ -59,7 +59,7 @@ Select one of the below options:
 cd 'your path to project root directory'
 python main.py
 ```
-- From IDE PyCharm
+- From IDE
 ```
 run main.py
 ```
